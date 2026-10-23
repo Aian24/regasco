@@ -1,26 +1,64 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --regasco-orange: #FF5A00;
+    --regasco-orange-dark: #E04E00;
+    --regasco-orange-light: #FFF2EB;
+    --regasco-blue: #004B93;
+    --regasco-blue-dark: #002D59;
+    --regasco-gold: #FFB800;
   }
 }
 
+/* Native Mobile App Physics & Reset (Grab / Foodpanda style) */
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  overscroll-behavior-y: contain;
+}
+
+/* Allow text selection in inputs */
+input, textarea {
+  user-select: text;
+}
+
+/* Leaflet map styles */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  z-index: 10;
+}
+
+/* Anti-flicker Leaflet GPU hardware-acceleration */
+.leaflet-pane > svg path {
+  shape-rendering: geometricPrecision;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.leaflet-zoom-anim .leaflet-zoom-animated {
+  will-change: transform;
+}
+.custom-leaflet-marker {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Hide scrollbars for clean mobile app feel */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

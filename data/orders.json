@@ -1,0 +1,161 @@
+[
+  {
+    "id": "ord_1792739270271_id526",
+    "orderCode": "REG-8628",
+    "customerName": "Juan Dela Cruz",
+    "customerPhone": "0917-882-4242",
+    "location": {
+      "address": "142 Mindanao Avenue, Barangay Bahay Toro, Project 8, Quezon City",
+      "landmark": "Near 7-Eleven, Green Gate",
+      "latitude": 14.6585,
+      "longitude": 121.0252
+    },
+    "items": [
+      {
+        "productId": "regasco-sk",
+        "productName": "Regasco Supreme Kalan (SK)",
+        "cylinderOption": "NEW_TANK",
+        "unitPrice": 1450,
+        "quantity": 1,
+        "imageUrl": "/images/regasco-sk.jpg",
+        "weightKg": 2.7
+      }
+    ],
+    "subtotal": 1450,
+    "deliveryFee": 50,
+    "totalAmount": 1500,
+    "paymentMethod": "COD",
+    "paymentStatus": "UNPAID",
+    "orderStatus": "OUT_FOR_DELIVERY",
+    "createdAt": "2026-10-23T07:07:50.271Z",
+    "updatedAt": "2026-10-23T07:08:15.370Z"
+  },
+  {
+    "id": "ord_1792739168553_l1uz3",
+    "orderCode": "REG-2022",
+    "customerName": "Juan Dela Cruz",
+    "customerPhone": "0917-882-4242",
+    "location": {
+      "address": "142 Mindanao Avenue, Barangay Bahay Toro, Project 8, Quezon City",
+      "landmark": "Near 7-Eleven, Green Gate",
+      "latitude": 14.6585,
+      "longitude": 121.0252
+    },
+    "items": [
+      {
+        "productId": "regasco-11kg",
+        "productName": "Regasco 11 KG",
+        "cylinderOption": "REFILL",
+        "unitPrice": 990,
+        "quantity": 1,
+        "imageUrl": "/images/regasco-11kg.jpg",
+        "weightKg": 11
+      }
+    ],
+    "subtotal": 990,
+    "deliveryFee": 50,
+    "totalAmount": 1040,
+    "paymentMethod": "COD",
+    "paymentStatus": "UNPAID",
+    "orderStatus": "OUT_FOR_DELIVERY",
+    "createdAt": "2026-10-23T07:06:08.553Z",
+    "updatedAt": "2026-10-23T07:06:38.604Z"
+  },
+  {
+    "id": "ord_1792737404175_ygg83",
+    "orderCode": "REG-5807",
+    "customerName": "Juan Dela Cruz",
+    "customerPhone": "0917-882-4242",
+    "location": {
+      "address": "142 Mindanao Avenue, Barangay Bahay Toro, Project 8, Quezon City",
+      "landmark": "Near 7-Eleven, Green Gate",
+      "latitude": 14.6585,
+      "longitude": 121.0252
+    },
+    "items": [
+      {
+        "productId": "regasco-sk",
+        "productName": "Regasco Supreme Kalan (SK)",
+        "cylinderOption": "REFILL",
+        "unitPrice": 380,
+        "quantity": 1,
+        "imageUrl": "/images/regasco-sk.jpg",
+        "weightKg": 2.7
+      }
+    ],
+    "subtotal": 380,
+    "deliveryFee": 50,
+    "totalAmount": 430,
+    "paymentMethod": "COD",
+    "paymentStatus": "UNPAID",
+    "orderStatus": "OUT_FOR_DELIVERY",
+    "createdAt": "2026-10-23T06:36:44.175Z",
+    "updatedAt": "2026-10-23T07:02:38.260Z"
+  },
+  {
+    "id": "demo-order-1",
+    "orderCode": "REG-8821",
+    "customerName": "Juan Dela Cruz",
+    "customerPhone": "0917-123-4567",
+    "location": {
+      "address": "142 Mindanao Avenue, Barangay Bahay Toro, Project 8, Quezon City",
+      "landmark": "Near 7-Eleven, Green Gate",
+      "latitude": 14.6585,
+      "longitude": 121.0252
+    },
+    "items": [
+      {
+        "productId": "regasco-11kg",
+        "productName": "Regasco 11 KG",
+        "cylinderOption": "REFILL",
+        "unitPrice": 990,
+        "quantity": 1,
+        "imageUrl": "/images/regasco-11kg.jpg",
+        "weightKg": 11
+      }
+    ],
+    "subtotal": 990,
+    "deliveryFee": 50,
+    "totalAmount": 1040,
+    "paymentMethod": "GCASH_QR",
+    "paymentStatus": "PENDING_VERIFICATION",
+    "paymentScreenshot": "/images/regasco-qr-gcash.jpg",
+    "paymentRefNumber": "GCASH-991823712",
+    "orderStatus": "PENDING_PAYMENT",
+    "notes": "Please test valve upon delivery",
+    "createdAt": "2026-10-23T05:16:59.197Z",
+    "updatedAt": "2026-10-23T05:16:59.197Z"
+  },
+  {
+    "id": "demo-order-2",
+    "orderCode": "REG-8820",
+    "customerName": "Maria Santos",
+    "customerPhone": "0918-987-6543",
+    "location": {
+      "address": "45 Sauyo Road, Novaliches, Quezon City",
+      "landmark": "Near 7-Eleven store",
+      "latitude": 14.6975,
+      "longitude": 121.0421
+    },
+    "items": [
+      {
+        "productId": "regasco-sk",
+        "productName": "Regasco Supreme Kalan (SK)",
+        "cylinderOption": "NEW_TANK",
+        "unitPrice": 1450,
+        "quantity": 1,
+        "imageUrl": "/images/regasco-sk.jpg",
+        "weightKg": 2.7
+      }
+    ],
+    "subtotal": 1450,
+    "deliveryFee": 50,
+    "totalAmount": 1500,
+    "paymentMethod": "COD",
+    "paymentStatus": "UNPAID",
+    "orderStatus": "OUT_FOR_DELIVERY",
+    "notes": "Call upon arrival",
+    "createdAt": "2026-10-23T03:51:59.197Z",
+    "updatedAt": "2026-10-23T05:31:59.197Z"
+  }
+]
