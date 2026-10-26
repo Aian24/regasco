@@ -22,6 +22,7 @@ import {
   ChevronRight,
   Edit2,
   Save,
+  Download,
 } from 'lucide-react';
 import { Order } from '@/types';
 
@@ -282,6 +283,19 @@ export default function AuthModal() {
               </div>
             )}
           </div>
+
+          {/* Download Official Android App */}
+          <a
+            href="/regasco-app.apk"
+            download="regasco-app.apk"
+            className="w-full py-2.5 px-3.5 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-700 font-extrabold text-xs flex items-center justify-between transition cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <Download className="w-4 h-4 text-orange-600" />
+              <span>Download Official Android App</span>
+            </div>
+            <span className="text-[10px] font-bold text-slate-400">4.6 MB (.apk)</span>
+          </a>
 
           {/* Admin & Sign Out Actions */}
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">

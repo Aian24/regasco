@@ -16,6 +16,8 @@ import {
   X,
   Package,
   ArrowRight,
+  Download,
+  Smartphone,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -112,6 +114,17 @@ export default function Header({
             <span>{phoneHotline.split('/')[0].trim()}</span>
           </a>
 
+          {/* Direct Download Android APK Button */}
+          <a
+            href="/regasco-app.apk"
+            download="regasco-app.apk"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 hover:bg-orange-100 border border-orange-200 text-xs font-bold text-orange-700 transition"
+            title="Download Official Regasco Android App (APK)"
+          >
+            <Download className="w-3.5 h-3.5 text-orange-600" />
+            <span className="hidden md:inline">Download App</span>
+          </a>
+
           {/* Track Order / My Orders Circular Button (Exact same w-10 h-10 size as Cart & Profile) */}
           <Link
             href="/track"
@@ -205,6 +218,19 @@ export default function Header({
                     </div>
                     <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
+
+                  <a
+                    href="/regasco-app.apk"
+                    download="regasco-app.apk"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="w-full px-3 py-2 text-left rounded-xl hover:bg-orange-50 text-slate-800 hover:text-orange-600 flex items-center justify-between font-bold transition group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Download className="w-4 h-4 text-orange-600" />
+                      <span>Download Android App (.apk)</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-400">4.6 MB</span>
+                  </a>
 
                   <button
                     type="button"
