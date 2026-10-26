@@ -12,7 +12,7 @@ export default function NativeAppBridge() {
       // 1. Status Bar Setup - ensure NO overlay so it never overlaps time, wifi, battery
       try {
         const { StatusBar, Style } = await import('@capacitor/status-bar');
-        await StatusBar.setOverlays({ overlay: false });
+        await StatusBar.setOverlaysWebView({ overlay: false });
         await StatusBar.setStyle({ style: Style.Dark });
         await StatusBar.setBackgroundColor({ color: '#FFFFFF' });
       } catch (e) {
