@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Regasco LPG",
+    title: "Regasco",
   },
 };
 
@@ -34,8 +34,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover",
-  themeColor: "#FF5A00",
+  viewportFit: "contain",
+  themeColor: "#FFFFFF",
 };
 
 export default function RootLayout({

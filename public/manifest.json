@@ -1,6 +1,6 @@
 {
-  "name": "REGASCO Mindanao Ave.",
-  "short_name": "Regasco LPG",
+  "name": "Regasco",
+  "short_name": "Regasco",
   "description": "Order cooking gas online from Regasco Mindanao Ave. Fast delivery, COD & GCash QR payment.",
   "start_url": "/",
   "display": "standalone",

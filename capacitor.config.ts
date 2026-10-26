@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.regasco.ordering',
-  appName: 'Regasco Mindanao Ave.',
+  appName: 'Regasco',
   webDir: 'out',
   server: {
     url: 'https://regasco.vercel.app',
@@ -11,7 +11,14 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: true,
-    backgroundColor: '#FF5A00',
+    backgroundColor: '#FFFFFF',
+  },
+  plugins: {
+    StatusBar: {
+      overlaysWebView: false,
+      style: 'DARK',
+      backgroundColor: '#FFFFFF',
+    },
   },
 };
 

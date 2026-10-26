@@ -9,11 +9,12 @@ export default function NativeAppBridge() {
 
   useEffect(() => {
     async function initNativePlugins() {
-      // 1. Status Bar Setup
+      // 1. Status Bar Setup - ensure NO overlay so it never overlaps time, wifi, battery
       try {
         const { StatusBar, Style } = await import('@capacitor/status-bar');
-        await StatusBar.setStyle({ style: Style.Light });
-        await StatusBar.setBackgroundColor({ color: '#FF5A00' });
+        await StatusBar.setOverlays({ overlay: false });
+        await StatusBar.setStyle({ style: Style.Dark });
+        await StatusBar.setBackgroundColor({ color: '#FFFFFF' });
       } catch (e) {
         // Not on native device
       }
