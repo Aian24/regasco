@@ -123,7 +123,7 @@ export default function StorefrontHomePage() {
                   Official Storefront
                 </span>
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight mt-1 drop-shadow-md">
-                  REGASCO Mindanao Ave. Branch
+                  {settings.storeName || 'REGASCO'} {settings.branchName || 'Mindanao Ave. Branch'}
                 </h1>
               </div>
 

@@ -420,14 +420,14 @@ function OrderTrackContent({
             <div>
               <div className="flex items-center gap-1.5">
                 <h3 className="font-extrabold text-slate-900 text-sm">
-                  Kuya Mark (Regasco Rider)
+                  {order.assignedRider?.name || 'Kuya Jun (Regasco Express Rider)'}
                 </h3>
                 <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">
                   LPG Certified
                 </span>
               </div>
               <p className="text-xs text-slate-500">
-                Mindanao Ave. Express Motorcycle Unit #8
+                Vehicle Plate: {order.assignedRider?.plateNumber || 'QC-8821'} &bull; Mindanao Ave. Depot
               </p>
             </div>
           </div>

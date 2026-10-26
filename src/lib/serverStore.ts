@@ -130,15 +130,42 @@ export function saveOrders(orders: Order[]): void {
 
 export function getStoreSettings(): StoreSettings {
   ensureDataDir();
+  let currentSettings: Partial<StoreSettings> = {};
   try {
     if (fs.existsSync(SETTINGS_FILE)) {
       const data = fs.readFileSync(SETTINGS_FILE, 'utf-8');
-      return JSON.parse(data);
+      currentSettings = JSON.parse(data);
     }
   } catch (e) {
     console.warn('Fallback to in-memory settings', e);
   }
-  return globalStore._regascoSettings || INITIAL_SETTINGS;
+
+  const memorySettings = globalStore._regascoSettings || INITIAL_SETTINGS;
+  const merged: StoreSettings = {
+    ...INITIAL_SETTINGS,
+    ...memorySettings,
+    ...currentSettings,
+    gcash: {
+      ...INITIAL_SETTINGS.gcash,
+      ...(memorySettings.gcash || {}),
+      ...(currentSettings.gcash || {}),
+    },
+    mapSettings: {
+      ...INITIAL_SETTINGS.mapSettings!,
+      ...(memorySettings.mapSettings || {}),
+      ...(currentSettings.mapSettings || {}),
+    },
+    adminCredentials: {
+      ...INITIAL_SETTINGS.adminCredentials!,
+      ...(memorySettings.adminCredentials || {}),
+      ...(currentSettings.adminCredentials || {}),
+    },
+    banners: currentSettings.banners || memorySettings.banners || INITIAL_SETTINGS.banners,
+    riders: currentSettings.riders || memorySettings.riders || INITIAL_SETTINGS.riders,
+  };
+
+  globalStore._regascoSettings = merged;
+  return merged;
 }
 
 export function saveStoreSettings(settings: StoreSettings): void {
@@ -173,3 +200,46 @@ export function saveProducts(products: Product[]): void {
     console.warn('Could not write to products file', e);
   }
 }
+
+// Extract customer directory from real orders
+export function getCustomers(): import('@/types').CustomerSummary[] {
+  const orders = getOrders();
+  const customerMap = new Map<string, import('@/types').CustomerSummary>();
+
+  for (const order of orders) {
+    const phone = (order.customerPhone || '').trim();
+    const key = phone || order.customerName.toLowerCase().trim();
+    if (!key) continue;
+
+    const existing = customerMap.get(key);
+    const orderDate = order.createdAt;
+
+    if (existing) {
+      existing.totalOrders += 1;
+      existing.totalSpent += Number(order.totalAmount || 0);
+      if (new Date(orderDate) > new Date(existing.lastOrderDate)) {
+        existing.lastOrderDate = orderDate;
+        existing.address = order.location.address || existing.address;
+        existing.landmark = order.location.landmark || existing.landmark;
+        existing.preferredPaymentMethod = order.paymentMethod;
+      }
+    } else {
+      customerMap.set(key, {
+        id: `cust_${phone.replace(/\D/g, '') || Math.random().toString(36).substring(2, 7)}`,
+        name: order.customerName,
+        phone: order.customerPhone,
+        address: order.location.address,
+        landmark: order.location.landmark,
+        totalOrders: 1,
+        totalSpent: Number(order.totalAmount || 0),
+        lastOrderDate: orderDate,
+        preferredPaymentMethod: order.paymentMethod,
+      });
+    }
+  }
+
+  return Array.from(customerMap.values()).sort(
+    (a, b) => new Date(b.lastOrderDate).getTime() - new Date(a.lastOrderDate).getTime()
+  );
+}
+

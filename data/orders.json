@@ -25,10 +25,10 @@
     "deliveryFee": 50,
     "totalAmount": 1500,
     "paymentMethod": "COD",
-    "paymentStatus": "UNPAID",
-    "orderStatus": "OUT_FOR_DELIVERY",
+    "paymentStatus": "PAID",
+    "orderStatus": "DELIVERED",
     "createdAt": "2026-10-23T07:07:50.271Z",
-    "updatedAt": "2026-10-23T07:08:15.370Z"
+    "updatedAt": "2026-10-26T09:43:52.564Z"
   },
   {
     "id": "ord_1792739168553_l1uz3",

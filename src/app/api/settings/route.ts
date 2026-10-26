@@ -4,12 +4,14 @@ import {
   saveStoreSettings,
   getProducts,
   saveProducts,
+  getCustomers,
 } from '@/lib/serverStore';
 
 export async function GET() {
   const settings = getStoreSettings();
   const products = getProducts();
-  return NextResponse.json({ settings, products });
+  const customers = getCustomers();
+  return NextResponse.json({ settings, products, customers });
 }
 
 export async function POST(request: Request) {

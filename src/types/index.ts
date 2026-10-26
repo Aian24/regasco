@@ -57,6 +57,10 @@ export interface Order {
   paymentRefNumber?: string;
   orderStatus: OrderStatus;
   notes?: string;
+  assignedRider?: DispatchRider;
+  rejectReason?: string;
+  riderCoordinates?: [number, number];
+  safetyCheckVerified?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -72,15 +76,63 @@ export interface UserProfile {
   longitude: number;
 }
 
+export interface PromoBanner {
+  id: string;
+  title: string;
+  subtitle: string;
+  badge?: string;
+  imageUrl: string;
+  linkUrl?: string;
+  isActive: boolean;
+}
+
+export interface MapSettings {
+  depotLat: number;
+  depotLng: number;
+  depotAddress: string;
+  defaultZoom: number;
+  tileLayerUrl?: string;
+}
+
+export interface AdminCredentials {
+  username: string;
+  passwordHash: string; // Plain/hash for admin credentials
+}
+
+export interface DispatchRider {
+  id: string;
+  name: string;
+  phone: string;
+  plateNumber: string;
+  status: 'AVAILABLE' | 'ON_DELIVERY' | 'OFFLINE';
+}
+
+export interface CustomerSummary {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  landmark?: string;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderDate: string;
+  preferredPaymentMethod?: PaymentMethod;
+}
+
 export interface StoreSettings {
   storeName: string;
   branchName: string;
+  logoUrl?: string;
   address: string;
   phoneHotline: string;
   deliveryFee: number;
   freeDeliveryThreshold: number;
   isStoreOpen: boolean;
   operatingHours: string;
+  banners?: PromoBanner[];
+  mapSettings?: MapSettings;
+  adminCredentials?: AdminCredentials;
+  riders?: DispatchRider[];
   gcash: {
     accountName: string;
     accountNumber: string;

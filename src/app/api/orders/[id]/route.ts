@@ -24,7 +24,15 @@ export async function PATCH(
   try {
     const { id } = await props.params;
     const body = await request.json();
-    const { orderStatus, paymentStatus, notes } = body;
+    const {
+      orderStatus,
+      paymentStatus,
+      notes,
+      assignedRider,
+      rejectReason,
+      riderCoordinates,
+      safetyCheckVerified,
+    } = body;
 
     const orders = getOrders();
     const index = orders.findIndex((o) => o.id === id || o.orderCode === id);
@@ -39,6 +47,10 @@ export async function PATCH(
       ...(orderStatus && { orderStatus: orderStatus as OrderStatus }),
       ...(paymentStatus && { paymentStatus }),
       ...(notes !== undefined && { notes }),
+      ...(assignedRider !== undefined && { assignedRider }),
+      ...(rejectReason !== undefined && { rejectReason }),
+      ...(riderCoordinates !== undefined && { riderCoordinates }),
+      ...(safetyCheckVerified !== undefined && { safetyCheckVerified }),
       updatedAt: new Date().toISOString(),
     };
 
