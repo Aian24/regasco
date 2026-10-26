@@ -161,35 +161,6 @@ export default function StorefrontHomePage() {
           </div>
         </div>
 
-        {/* Grab/Foodpanda Style Official Android App Download Banner */}
-        <div className="bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 rounded-3xl p-4 sm:p-5 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 border border-orange-400/30">
-          <div className="flex items-center gap-3.5 w-full sm:w-auto">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30 shadow-inner">
-              <Smartphone className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-black tracking-tight">Official Regasco Android App</h3>
-                <span className="text-[10px] font-black uppercase bg-white/25 px-2 py-0.5 rounded-full tracking-wide">
-                  APK v1.0
-                </span>
-              </div>
-              <p className="text-xs text-white/95 font-medium leading-relaxed">
-                Direct install for live GPS route tracking, order status notifications & fast checkout.
-              </p>
-            </div>
-          </div>
-
-          <a
-            href="/regasco-app.apk"
-            download="regasco-app.apk"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-white hover:bg-orange-50 active:scale-95 text-orange-600 font-extrabold text-xs shadow-md transition shrink-0 cursor-pointer"
-          >
-            <Download className="w-4 h-4 text-orange-600" />
-            <span>Download Android App (4.6 MB)</span>
-          </a>
-        </div>
-
         {/* Category Filter Pills (Icons only, strictly no emojis) */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
           {[

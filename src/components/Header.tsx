@@ -114,15 +114,17 @@ export default function Header({
             <span>{phoneHotline.split('/')[0].trim()}</span>
           </a>
 
-          {/* Direct Download Android APK Button */}
+          {/* Direct Download Android APK Button (Mobile icon button, desktop pill) */}
           <a
             href="/regasco-app.apk"
             download="regasco-app.apk"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 hover:bg-orange-100 border border-orange-200 text-xs font-bold text-orange-700 transition"
-            title="Download Official Regasco Android App (APK)"
+            className="flex items-center gap-1.5 w-10 h-10 sm:w-auto sm:px-3 sm:py-1.5 rounded-full bg-orange-50 hover:bg-orange-100 border border-orange-200 text-xs font-bold text-orange-700 transition shadow-xs hover:border-orange-300 justify-center active:scale-95 cursor-pointer shrink-0"
+            title="Download Official Regasco Android App (4.6 MB APK)"
+            aria-label="Download Android App APK"
           >
-            <Download className="w-3.5 h-3.5 text-orange-600" />
-            <span className="hidden md:inline">Download App</span>
+            <Smartphone className="w-5 h-5 sm:w-3.5 sm:h-3.5 text-orange-600 shrink-0" />
+            <span className="hidden sm:inline">Get App</span>
+            <span className="hidden md:inline-block text-[10px] bg-orange-600 text-white font-black px-1.5 py-0.2 rounded-full">APK</span>
           </a>
 
           {/* Track Order / My Orders Circular Button (Exact same w-10 h-10 size as Cart & Profile) */}
@@ -243,15 +245,6 @@ export default function Header({
                     <MapPin className="w-4 h-4 text-orange-600" />
                     <span>Profile & Address Settings</span>
                   </button>
-
-                  <Link
-                    href="/admin"
-                    onClick={() => setIsUserMenuOpen(false)}
-                    className="w-full px-3 py-2 text-left rounded-xl hover:bg-slate-100 text-slate-700 flex items-center gap-2 font-bold transition"
-                  >
-                    <Settings className="w-4 h-4 text-blue-600" />
-                    <span>Store Admin Portal</span>
-                  </Link>
 
                   <button
                     type="button"

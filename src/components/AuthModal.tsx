@@ -297,24 +297,15 @@ export default function AuthModal() {
             <span className="text-[10px] font-bold text-slate-400">4.6 MB (.apk)</span>
           </a>
 
-          {/* Admin & Sign Out Actions */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-xs">
-            <Link
-              href="/admin"
-              onClick={closeAuthModal}
-              className="px-3.5 py-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-blue-50 font-bold transition flex items-center gap-1.5"
-            >
-              <Settings className="w-3.5 h-3.5" />
-              <span>Admin Portal</span>
-            </Link>
-
+          {/* Sign Out Action */}
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-end text-xs">
             <button
               type="button"
               onClick={() => {
                 logout();
                 closeAuthModal();
               }}
-              className="px-3.5 py-2 rounded-xl text-red-600 hover:bg-red-50 font-bold transition flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 rounded-xl text-red-600 hover:bg-red-50 font-bold transition flex items-center gap-1.5 cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Sign Out</span>
