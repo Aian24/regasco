@@ -119,12 +119,12 @@ export default function PaymentSection({
               {paymentMethod === 'COD' && <Check className="w-2.5 h-2.5 stroke-[3]" />}
             </span>
           </div>
-          <div className="mt-2">
-            <span className="font-bold text-slate-900 text-xs block">
+          <div className="mt-2 min-w-0">
+            <span className="font-bold text-slate-900 text-xs block whitespace-nowrap truncate">
               Cash on Delivery (COD)
             </span>
-            <span className="text-[10px] text-slate-500">
-              Pay upon doorstep tank delivery
+            <span className="text-[10px] text-slate-500 block whitespace-nowrap truncate">
+              Pay upon doorstep delivery
             </span>
           </div>
         </button>
@@ -155,12 +155,12 @@ export default function PaymentSection({
               )}
             </span>
           </div>
-          <div className="mt-2">
-            <span className="font-bold text-slate-900 text-xs block">
+          <div className="mt-2 min-w-0">
+            <span className="font-bold text-slate-900 text-xs block whitespace-nowrap truncate">
               GCash / Maya QR Ph
             </span>
-            <span className="text-[10px] text-slate-500">
-              Scan & upload payment screenshot
+            <span className="text-[10px] text-slate-500 block whitespace-nowrap truncate">
+              Scan & upload payment receipt
             </span>
           </div>
         </button>

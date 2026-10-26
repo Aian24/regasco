@@ -202,35 +202,38 @@ export default function ShopeeOrdersHubPage() {
         </div>
 
         {/* Shopee-style Horizontal Status Tabs */}
-        <div className="bg-white rounded-2xl p-1.5 border border-slate-200 shadow-xs flex items-center gap-1 overflow-x-auto no-scrollbar">
-          {[
-            { id: 'ALL', label: 'All Orders', count: orders.length },
-            { id: 'TO_PAY', label: 'To Pay / Verify', count: countToPay },
-            { id: 'TO_RECEIVE', label: 'To Receive', count: countToReceive },
-            { id: 'COMPLETED', label: 'Completed', count: countCompleted },
-            { id: 'CANCELLED', label: 'Cancelled', count: 0 },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as OrderTab)}
-              className={`flex-1 min-w-[100px] py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                activeTab === tab.id
-                  ? 'bg-orange-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <span>{tab.label}</span>
-              {tab.count > 0 && (
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                    activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-orange-100 text-orange-700'
-                  }`}
-                >
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="bg-white rounded-2xl p-1.5 border border-slate-200 shadow-xs overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1.5 min-w-max">
+            {[
+              { id: 'ALL', label: 'All Orders', count: orders.length },
+              { id: 'TO_PAY', label: 'To Pay / Verify', count: countToPay },
+              { id: 'TO_RECEIVE', label: 'To Receive', count: countToReceive },
+              { id: 'COMPLETED', label: 'Completed', count: countCompleted },
+              { id: 'CANCELLED', label: 'Cancelled', count: 0 },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as OrderTab)}
+                className={`shrink-0 py-2 px-3.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer active:scale-95 ${
+                  activeTab === tab.id
+                    ? 'bg-orange-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                <span>{tab.label}</span>
+                {tab.count > 0 && (
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                      activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-orange-100 text-orange-700'
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Orders List */}
@@ -272,18 +275,18 @@ export default function ShopeeOrdersHubPage() {
                   className="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden hover:border-orange-300 transition-all"
                 >
                   {/* Card Header: Storefront Brand & Status Badge */}
-                  <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-3 bg-slate-50/50">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-orange-500 text-white flex items-center justify-center">
+                  <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-2 bg-slate-50/50">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-orange-500 text-white flex items-center justify-center shrink-0">
                         <Flame className="w-4 h-4" />
                       </div>
-                      <span className="font-extrabold text-xs text-slate-900">
+                      <span className="font-extrabold text-xs text-slate-900 truncate">
                         REGASCO Mindanao Ave. Branch
                       </span>
                     </div>
 
                     <span
-                      className={`text-[11px] font-black px-2.5 py-1 rounded-full border ${badge.color}`}
+                      className={`text-[11px] font-black px-2.5 py-1 rounded-full border whitespace-nowrap shrink-0 ${badge.color}`}
                     >
                       {badge.label}
                     </span>
@@ -293,8 +296,8 @@ export default function ShopeeOrdersHubPage() {
                   <div className="p-4 divide-y divide-slate-100">
                     {order.items.map((item, idx) => (
                       <div key={idx} className="py-2.5 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-14 h-14 bg-slate-50 rounded-xl overflow-hidden shrink-0 border border-slate-100 p-1">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-slate-50 rounded-xl overflow-hidden shrink-0 border border-slate-100 p-1">
                             <Image
                               src={item.imageUrl || '/images/regasco-11kg.jpg'}
                               alt={item.productName}
@@ -302,20 +305,20 @@ export default function ShopeeOrdersHubPage() {
                               className="object-contain"
                             />
                           </div>
-                          <div>
-                            <h4 className="text-xs font-black text-slate-900">{item.productName}</h4>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-xs font-black text-slate-900 truncate">{item.productName}</h4>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-orange-50 text-orange-700 border border-orange-200">
-                                {item.cylinderOption === 'REFILL' ? 'Refill (Empty Swap)' : 'New Tank Package'}
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200 whitespace-nowrap shrink-0">
+                                {item.cylinderOption === 'REFILL' ? 'Refill' : 'New Tank'}
                               </span>
-                              <span className="text-[11px] text-slate-500 font-semibold">
+                              <span className="text-[11px] text-slate-500 font-semibold whitespace-nowrap">
                                 x{item.quantity}
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        <span className="text-xs font-black text-slate-900">
+                        <span className="text-xs font-black text-slate-900 shrink-0 whitespace-nowrap">
                           ₱{(item.unitPrice * item.quantity).toLocaleString()}
                         </span>
                       </div>
@@ -323,8 +326,8 @@ export default function ShopeeOrdersHubPage() {
                   </div>
 
                   {/* Delivery Location Preview */}
-                  <div className="px-4 py-2 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                    <div className="flex items-center gap-1.5 truncate max-w-md">
+                  <div className="px-4 py-2 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-3 text-[11px] text-slate-600">
+                    <div className="flex items-center gap-1.5 truncate min-w-0 flex-1">
                       <MapPin className="w-3.5 h-3.5 text-orange-600 shrink-0" />
                       <span className="truncate">{order.location.address}</span>
                     </div>
@@ -340,7 +343,7 @@ export default function ShopeeOrdersHubPage() {
 
                   {/* Card Footer: Total Amount & Action Buttons */}
                   <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
-                    <div className="flex items-baseline gap-2">
+                    <div className="flex items-baseline gap-2 flex-wrap">
                       <span className="text-xs text-slate-500">
                         Order #{order.orderCode} • Total:
                       </span>
@@ -352,17 +355,17 @@ export default function ShopeeOrdersHubPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:items-center">
                       {/* Live Tracking Button */}
                       <Link
                         href={`/track/${order.orderCode}`}
-                        className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition active:scale-95 cursor-pointer ${
+                        className={`px-3 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer whitespace-nowrap ${
                           isLive
                             ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-md shadow-orange-600/30'
                             : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                         }`}
                       >
-                        <Truck className="w-3.5 h-3.5" />
+                        <Truck className="w-3.5 h-3.5 shrink-0" />
                         <span>{isLive ? 'Track Live Rider' : 'View Milestones'}</span>
                       </Link>
 
@@ -370,10 +373,10 @@ export default function ShopeeOrdersHubPage() {
                       <button
                         type="button"
                         onClick={() => handleOrderAgain(order)}
-                        className="px-4 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 font-extrabold text-xs transition border border-orange-200 flex items-center gap-1 active:scale-95 cursor-pointer"
+                        className="px-3 py-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 font-extrabold text-xs transition border border-orange-200 flex items-center justify-center gap-1 active:scale-95 cursor-pointer whitespace-nowrap"
                         title="Re-order the exact same cylinders"
                       >
-                        <RotateCcw className="w-3.5 h-3.5" />
+                        <RotateCcw className="w-3.5 h-3.5 shrink-0" />
                         <span>Order Again</span>
                       </button>
                     </div>

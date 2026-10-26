@@ -127,10 +127,10 @@ export default function Header({
             <span className="hidden md:inline-block text-[10px] bg-orange-600 text-white font-black px-1.5 py-0.2 rounded-full">APK</span>
           </a>
 
-          {/* Track Order / My Orders Circular Button (Exact same w-10 h-10 size as Cart & Profile) */}
+          {/* Track Order / My Orders Button (Desktop only; mobile uses BottomNavBar) */}
           <Link
             href="/track"
-            className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 hover:text-orange-600 flex items-center justify-center transition shadow-xs hover:border-orange-300 relative group cursor-pointer"
+            className="hidden sm:flex w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 hover:text-orange-600 items-center justify-center transition shadow-xs hover:border-orange-300 relative group cursor-pointer"
             title="My Orders & Live Tracking"
             aria-label="My Orders"
           >

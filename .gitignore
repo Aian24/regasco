@@ -42,3 +42,4 @@ next-env.d.ts
 
 # mobile apk binaries
 *.apk
+!public/regasco-app.apk

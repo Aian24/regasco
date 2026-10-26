@@ -26,6 +26,9 @@ if (Test-Path $apkPath) {
     $item = Get-Item $apkPath
     $sizeMb = [math]::Round($item.Length / 1MB, 2)
     Write-Host "APK Location: $apkPath" -ForegroundColor Green
+    Copy-Item $apkPath -Destination "regasco-app-debug.apk" -Force
+    Copy-Item $apkPath -Destination "public\regasco-app.apk" -Force
+    Write-Host "Copied APK to regasco-app-debug.apk and public\regasco-app.apk" -ForegroundColor Green
     Write-Host "File Size: $sizeMb MB" -ForegroundColor Green
     Write-Host "Install to connected phone: adb install -r $apkPath" -ForegroundColor Cyan
 } else {

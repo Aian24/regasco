@@ -95,7 +95,7 @@ export default function BasketCheckoutPage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-orange-50 hover:text-orange-600 text-slate-700 text-xs font-bold transition border border-slate-200 group"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-orange-50 hover:text-orange-600 text-slate-700 text-xs font-bold transition border border-slate-200 group"
               >
                 <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                 <span>Store</span>
@@ -306,15 +306,15 @@ export default function BasketCheckoutPage() {
       {/* Modern Interactive Checkout Navbar */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          {/* Left: Back & Brand */}
+          {/* Left: Back (Desktop only) & Brand */}
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-orange-50 hover:text-orange-600 text-slate-700 text-xs font-bold transition border border-slate-200 group"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-orange-50 hover:text-orange-600 text-slate-700 text-xs font-bold transition border border-slate-200 group"
               title="Back to Storefront"
             >
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-              <span className="hidden sm:inline">Store</span>
+              <span>Store</span>
             </Link>
 
             <Link href="/" className="flex items-center gap-2 group">
@@ -384,24 +384,24 @@ export default function BasketCheckoutPage() {
         )}
 
         <form onSubmit={handleSubmitOrder} className="space-y-6">
-          {/* SECTION 1: CONFIRMED DELIVERY ADDRESS (Shopee / Lazada / Grab style) */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+          {/* SECTION 1: CONFIRMED DELIVERY ADDRESS */}
+          <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-3">
+            <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
                   <MapPin className="w-4 h-4" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-black text-slate-900 text-base">
-                      Confirmed Delivery Address
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-nowrap">
+                    <h2 className="font-black text-slate-900 text-sm sm:text-base whitespace-nowrap">
+                      Delivery Address
                     </h2>
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Default Address
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">
+                      Default
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Saved from your customer profile settings
+                  <p className="text-[11px] text-slate-400 truncate">
+                    Saved from customer profile settings
                   </p>
                 </div>
               </div>
@@ -409,10 +409,10 @@ export default function BasketCheckoutPage() {
               <button
                 type="button"
                 onClick={() => setIsEditingAddress(!isEditingAddress)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold transition border border-orange-200"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold transition border border-orange-200 shrink-0 whitespace-nowrap cursor-pointer active:scale-95"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                <span>{isEditingAddress ? 'Done Editing' : 'Change / Pin on Map'}</span>
+                <span>{isEditingAddress ? 'Done' : 'Change'}</span>
               </button>
             </div>
 
@@ -435,9 +435,6 @@ export default function BasketCheckoutPage() {
                     <strong className="text-slate-600">Landmark:</strong> {location.landmark}
                   </p>
                 )}
-                <div className="pt-1 text-[10px] text-slate-400">
-                  Mindanao Ave. Hub Coordinates: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
-                </div>
               </div>
             ) : (
               <div className="space-y-4 pt-2">
@@ -496,10 +493,10 @@ export default function BasketCheckoutPage() {
               {cartItems.map((item) => (
                 <div
                   key={`${item.productId}_${item.cylinderOption}`}
-                  className="py-3.5 flex items-center justify-between gap-3"
+                  className="py-3.5 flex items-center justify-between gap-2.5 sm:gap-3"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 p-1 shrink-0 overflow-hidden">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                    <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-50 border border-slate-100 p-1 shrink-0 overflow-hidden">
                       <Image
                         src={item.imageUrl}
                         alt={item.productName}
@@ -507,24 +504,24 @@ export default function BasketCheckoutPage() {
                         className="object-contain"
                       />
                     </div>
-                    <div>
-                      <h3 className="font-extrabold text-slate-900 text-sm">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">
                         {item.productName}
                       </h3>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-orange-100 text-orange-800">
-                          {item.cylinderOption === 'REFILL' ? 'Refill (Empty Tank Swap)' : 'New Tank Package'}
+                      <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 flex-nowrap">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 whitespace-nowrap shrink-0">
+                          {item.cylinderOption === 'REFILL' ? 'Refill' : 'New Tank'}
                         </span>
-                        <span className="text-xs font-bold text-slate-700">
-                          ₱{item.unitPrice.toLocaleString()} each
+                        <span className="text-xs font-black text-slate-800 whitespace-nowrap">
+                          ₱{item.unitPrice.toLocaleString()}
                         </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Quantity Stepper & Remove */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 bg-slate-100 rounded-xl p-1">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-0.5 sm:p-1">
                       <button
                         type="button"
                         onClick={() =>
@@ -534,11 +531,11 @@ export default function BasketCheckoutPage() {
                             item.quantity - 1
                           )
                         }
-                        className="w-7 h-7 rounded-lg bg-white hover:bg-slate-200 text-slate-700 flex items-center justify-center transition shadow-xs"
+                        className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white hover:bg-slate-200 text-slate-700 flex items-center justify-center transition shadow-xs active:scale-90"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="w-6 text-center text-xs font-black text-slate-900">
+                      <span className="w-5 sm:w-6 text-center text-xs font-black text-slate-900">
                         {item.quantity}
                       </span>
                       <button
@@ -550,7 +547,7 @@ export default function BasketCheckoutPage() {
                             item.quantity + 1
                           )
                         }
-                        className="w-7 h-7 rounded-lg bg-orange-600 hover:bg-orange-700 text-white flex items-center justify-center transition shadow-xs"
+                        className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-orange-600 hover:bg-orange-700 text-white flex items-center justify-center transition shadow-xs active:scale-90"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -561,7 +558,7 @@ export default function BasketCheckoutPage() {
                       onClick={() =>
                         removeFromCart(item.productId, item.cylinderOption)
                       }
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition"
+                      className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition active:scale-90"
                       title="Remove item"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -624,14 +621,13 @@ export default function BasketCheckoutPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 active:scale-[0.99] text-white font-black text-base shadow-xl shadow-orange-500/40 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 active:scale-[0.99] text-white font-black text-base shadow-xl shadow-orange-500/40 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <span>
                 {isSubmitting
                   ? 'Placing Order...'
                   : `Place Order Now • ₱${grandTotal.toLocaleString()}`}
               </span>
-              <ArrowRight className="w-5 h-5 stroke-[2.5]" />
             </button>
 
             <div className="flex items-center justify-center gap-2 text-[11px] text-white/60 pt-1">

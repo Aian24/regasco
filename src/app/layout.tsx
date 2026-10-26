@@ -6,7 +6,6 @@ import { AuthProvider } from "@/context/AuthContext";
 import AuthModal from "@/components/AuthModal";
 import React, { Suspense } from "react";
 import BottomNavBar from "@/components/BottomNavBar";
-import FloatingBasketBar from "@/components/FloatingBasketBar";
 import NativeAppBridge from "@/components/NativeAppBridge";
 
 const inter = Inter({
@@ -61,9 +60,6 @@ export default function RootLayout({
               <NativeAppBridge />
             </Suspense>
             {children}
-            <Suspense fallback={null}>
-              <FloatingBasketBar />
-            </Suspense>
             <Suspense fallback={null}>
               <BottomNavBar />
             </Suspense>
