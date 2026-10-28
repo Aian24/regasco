@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getOrders, saveOrders, getStoreSettings } from '@/lib/serverStore';
+import { isNeonConfigured, getNeonOrders } from '@/lib/db';
 import { Order } from '@/types';
 
 export async function GET(request: Request) {
@@ -7,7 +8,17 @@ export async function GET(request: Request) {
   const code = searchParams.get('code');
   const id = searchParams.get('id');
 
-  const orders = getOrders();
+  let orders = getOrders();
+  if (isNeonConfigured()) {
+    try {
+      const neonOrders = await getNeonOrders();
+      if (neonOrders !== null) {
+        orders = neonOrders;
+      }
+    } catch (e) {
+      console.warn('Neon orders fetch fallback to local store', e);
+    }
+  }
 
   if (code) {
     const order = orders.find(

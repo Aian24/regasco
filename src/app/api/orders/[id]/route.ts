@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getOrders, saveOrders } from '@/lib/serverStore';
+import { isNeonConfigured, getNeonOrders } from '@/lib/db';
 import { OrderStatus } from '@/types';
 
 export async function GET(
@@ -7,7 +8,16 @@ export async function GET(
   props: { params: Promise<{ id: string }> }
 ) {
   const { id } = await props.params;
-  const orders = getOrders();
+  let orders = getOrders();
+  if (isNeonConfigured()) {
+    try {
+      const neonOrders = await getNeonOrders();
+      if (neonOrders !== null) {
+        orders = neonOrders;
+      }
+    } catch (e) {}
+  }
+
   const order = orders.find((o) => o.id === id || o.orderCode === id);
 
   if (!order) {
