@@ -7,6 +7,7 @@ import AuthModal from "@/components/AuthModal";
 import React, { Suspense } from "react";
 import BottomNavBar from "@/components/BottomNavBar";
 import NativeAppBridge from "@/components/NativeAppBridge";
+import CustomerOrderBanner from "@/components/CustomerOrderBanner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -60,6 +61,9 @@ export default function RootLayout({
               <NativeAppBridge />
             </Suspense>
             {children}
+            <Suspense fallback={null}>
+              <CustomerOrderBanner />
+            </Suspense>
             <Suspense fallback={null}>
               <BottomNavBar />
             </Suspense>

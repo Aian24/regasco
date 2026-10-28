@@ -313,6 +313,24 @@ export default function AdminPage() {
   const previousOrdersMapRef = useRef<Map<string, Order>>(new Map());
   const isInitialLoadRef = useRef(true);
 
+  // Floating Top Banner Alert for Admin
+  const [adminBannerAlert, setAdminBannerAlert] = useState<{
+    type: 'NEW_ORDER' | 'NEEDS_VERIFICATION' | 'DELIVERED';
+    title: string;
+    message: string;
+    orderCode: string;
+    orderId: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (adminBannerAlert) {
+      const timer = setTimeout(() => {
+        setAdminBannerAlert(null);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [adminBannerAlert]);
+
   // Add Notification Helper
   const addNotification = (item: {
     type: 'NEW_ORDER' | 'NEEDS_VERIFICATION' | 'DELIVERED' | 'DISPATCHED';
@@ -329,6 +347,16 @@ export default function AdminPage() {
     };
     setNotifications((prev) => [newItem, ...prev.slice(0, 24)]);
     setUnreadNotifCount((prev) => prev + 1);
+
+    if (item.type !== 'DISPATCHED' && item.orderCode && item.orderId) {
+      setAdminBannerAlert({
+        type: item.type as any,
+        title: item.title,
+        message: item.message,
+        orderCode: item.orderCode,
+        orderId: item.orderId,
+      });
+    }
   };
 
   // Check saved session & request notification permission on mount
@@ -1179,6 +1207,68 @@ export default function AdminPage() {
           </button>
         </div>
       </header>
+
+      {/* Real-Time Floating Banner Alert for New Orders / Verifications */}
+      {adminBannerAlert && (
+        <div className="sticky top-[61px] z-30 px-4 sm:px-8 pt-3 pb-1 animate-in slide-in-from-top-3 duration-300">
+          <div
+            className={`p-4 rounded-3xl shadow-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs ${
+              adminBannerAlert.type === 'NEW_ORDER'
+                ? 'bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 text-white border-orange-400/50 shadow-orange-500/20'
+                : adminBannerAlert.type === 'NEEDS_VERIFICATION'
+                ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white border-amber-300/50 shadow-amber-500/20'
+                : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-emerald-400/50 shadow-emerald-500/20'
+            }`}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                {adminBannerAlert.type === 'NEW_ORDER' ? (
+                  <Flame className="w-5 h-5 text-white animate-bounce" />
+                ) : adminBannerAlert.type === 'NEEDS_VERIFICATION' ? (
+                  <AlertTriangle className="w-5 h-5 text-white animate-pulse" />
+                ) : (
+                  <CheckCircle2 className="w-5 h-5 text-white" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono font-black text-sm tracking-tight">{adminBannerAlert.orderCode}</span>
+                  <span className="bg-black/25 text-[10px] font-black uppercase px-2 py-0.5 rounded-full">
+                    {adminBannerAlert.type.replace('_', ' ')}
+                  </span>
+                  <span className="text-white/80 text-[11px] font-bold">Just now</span>
+                </div>
+                <p className="text-white/95 text-xs font-semibold truncate mt-0.5">
+                  {adminBannerAlert.message}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('orders');
+                  setOrderSearchQuery(adminBannerAlert.orderCode);
+                  setAdminBannerAlert(null);
+                }}
+                className="px-4 py-2 rounded-2xl bg-white text-slate-900 font-bold text-xs shadow-md hover:bg-slate-100 active:scale-95 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <span>Review Order</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setAdminBannerAlert(null)}
+                className="p-2 rounded-2xl bg-black/20 hover:bg-black/40 text-white transition cursor-pointer"
+                title="Dismiss Alert"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Tab Content: 100% Full Width (Removed max-w-7xl) */}
       <main className="flex-1 p-4 sm:p-8 w-full space-y-6">

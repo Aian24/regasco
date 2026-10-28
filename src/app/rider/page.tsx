@@ -627,6 +627,71 @@ export default function RiderPortalPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans pb-24">
+      {/* Floating In-App Delivery Alert Banner */}
+      {incomingMissionAlert && (
+        <div className="fixed top-3 left-3 right-3 sm:left-auto sm:right-6 sm:w-96 z-50 animate-in slide-in-from-top duration-300">
+          <div className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white rounded-3xl p-4 shadow-2xl border-2 border-amber-300/40 flex flex-col gap-3 backdrop-blur-md">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0 animate-bounce">
+                  <Truck className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase font-black tracking-wider bg-black/30 px-2 py-0.5 rounded-full text-amber-200">
+                      New Mission Assigned!
+                    </span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  </div>
+                  <h4 className="text-sm font-black tracking-tight mt-0.5">
+                    Order {incomingMissionAlert.orderCode}
+                  </h4>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIncomingMissionAlert(null)}
+                className="w-7 h-7 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white/80 hover:text-white transition cursor-pointer shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="bg-black/25 rounded-2xl p-2.5 text-xs space-y-1 text-slate-100">
+              <p className="font-bold flex items-center gap-1.5 text-amber-200 truncate">
+                <MapPin className="w-3.5 h-3.5 shrink-0 text-amber-300" />
+                <span>{incomingMissionAlert.location.address}</span>
+              </p>
+              <div className="flex items-center justify-between text-[11px] text-white/90 pt-1 border-t border-white/10">
+                <span>Customer: <strong>{incomingMissionAlert.customerName}</strong></span>
+                <span className="font-mono font-bold text-amber-300">₱{incomingMissionAlert.totalAmount.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIncomingMissionAlert(null);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="flex-1 py-2.5 rounded-2xl bg-white hover:bg-amber-50 text-orange-700 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-black/20 transition cursor-pointer active:scale-95"
+              >
+                <Navigation className="w-3.5 h-3.5 text-orange-600 fill-orange-600" />
+                <span>View Route & Deliver</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIncomingMissionAlert(null)}
+                className="px-3 py-2.5 rounded-2xl bg-black/30 hover:bg-black/40 text-white text-xs font-bold transition cursor-pointer"
+              >
+                Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Rider Cockpit Header */}
       <header className="bg-slate-950/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 px-3 sm:px-4 py-2.5 sm:py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between gap-2">
