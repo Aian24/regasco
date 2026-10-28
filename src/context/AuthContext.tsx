@@ -6,8 +6,8 @@ import { UserProfile } from '@/types';
 interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
-  login: (phone: string, name?: string) => Promise<boolean>;
-  signup: (profileData: Omit<UserProfile, 'id'>) => Promise<boolean>;
+  login: (phone: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (profileData: Omit<UserProfile, 'id'>) => Promise<{ success: boolean; error?: string }>;
   updateAddress: (
     address: string,
     landmark?: string,
@@ -22,65 +22,108 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Default sample demo user (Juan Dela Cruz) with realistic far delivery address (~4.2 km away)
-const DEFAULT_USER: UserProfile = {
-  id: 'usr_default_1',
-  name: 'Juan Dela Cruz',
-  phone: '0917-882-4242',
-  email: 'juan.delacruz@gmail.com',
-  address: '142 Mindanao Avenue, Barangay Bahay Toro, Project 8, Quezon City',
-  landmark: 'Near 7-Eleven, Green Gate',
-  latitude: 14.6585,
-  longitude: 121.0252,
-};
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load user from localStorage on mount
+  // Load user from localStorage on mount (Guest by default, no fake auto-login)
   useEffect(() => {
     try {
       const stored = localStorage.getItem('regasco_user');
       if (stored) {
-        setUser(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Purge legacy fake Juan Dela Cruz default session if present
+        if (parsed?.id === 'usr_default_1' || parsed?.phone === '0917-882-4242') {
+          localStorage.removeItem('regasco_user');
+          setUser(null);
+        } else if (parsed && parsed.phone) {
+          setUser(parsed);
+        }
       } else {
-        // By default initialize with the default profile so address is always ready
-        setUser(DEFAULT_USER);
-        localStorage.setItem('regasco_user', JSON.stringify(DEFAULT_USER));
+        setUser(null);
       }
     } catch (e) {
-      setUser(DEFAULT_USER);
+      setUser(null);
     }
     setIsInitialized(true);
   }, []);
 
-  const login = async (phone: string, name?: string) => {
-    const newUser: UserProfile = {
-      id: `usr_${Date.now()}`,
-      name: name || user?.name || 'Customer',
-      phone: phone.trim(),
-      address: user?.address || '142 Mindanao Avenue, Barangay Bahay Toro, Project 8, Quezon City',
-      landmark: user?.landmark || '',
-      latitude: user?.latitude || 14.6585,
-      longitude: user?.longitude || 121.0252,
-    };
-    setUser(newUser);
-    localStorage.setItem('regasco_user', JSON.stringify(newUser));
+  const login = async (phone: string, password?: string) => {
+    const cleanInputPhone = phone.trim().replace(/[\s-]/g, '');
+
+    if (!cleanInputPhone) {
+      return { success: false, error: 'Please enter your mobile phone number.' };
+    }
+
+    // Check registered accounts
+    let registeredUsers: UserProfile[] = [];
+    try {
+      const raw = localStorage.getItem('regasco_registered_users');
+      if (raw) registeredUsers = JSON.parse(raw);
+    } catch (e) {}
+
+    const found = registeredUsers.find(
+      (u) => (u.phone || '').replace(/[\s-]/g, '') === cleanInputPhone
+    );
+
+    if (!found) {
+      return {
+        success: false,
+        error: 'No account found with this phone number. Please click "Create Account" first.',
+      };
+    }
+
+    if (found.password && password && found.password !== password.trim()) {
+      return {
+        success: false,
+        error: 'Incorrect password. Please verify and try again.',
+      };
+    }
+
+    setUser(found);
+    localStorage.setItem('regasco_user', JSON.stringify(found));
     setIsAuthModalOpen(false);
-    return true;
+    return { success: true };
   };
 
   const signup = async (profileData: Omit<UserProfile, 'id'>) => {
+    const cleanPhone = profileData.phone.trim().replace(/[\s-]/g, '');
+
+    if (!cleanPhone || cleanPhone.length < 10) {
+      return { success: false, error: 'Please enter a valid mobile phone number.' };
+    }
+
+    let registeredUsers: UserProfile[] = [];
+    try {
+      const raw = localStorage.getItem('regasco_registered_users');
+      if (raw) registeredUsers = JSON.parse(raw);
+    } catch (e) {}
+
+    const existing = registeredUsers.find(
+      (u) => (u.phone || '').replace(/[\s-]/g, '') === cleanPhone
+    );
+
+    if (existing) {
+      return {
+        success: false,
+        error: 'An account with this phone number already exists. Please Sign In instead.',
+      };
+    }
+
     const newUser: UserProfile = {
       ...profileData,
       id: `usr_${Date.now()}`,
+      phone: profileData.phone.trim(),
+      password: profileData.password?.trim(),
     };
-    setUser(newUser);
+
+    registeredUsers.push(newUser);
+    localStorage.setItem('regasco_registered_users', JSON.stringify(registeredUsers));
     localStorage.setItem('regasco_user', JSON.stringify(newUser));
+    setUser(newUser);
     setIsAuthModalOpen(false);
-    return true;
+    return { success: true };
   };
 
   const updateAddress = (

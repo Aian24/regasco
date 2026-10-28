@@ -23,6 +23,8 @@ import {
   Edit2,
   Save,
   Download,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { Order } from '@/types';
 
@@ -34,6 +36,8 @@ export default function AuthModal() {
   // Form states
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [address, setAddress] = useState(user?.address || '');
   const [landmark, setLandmark] = useState(user?.landmark || '');
   const [isEditingAddress, setIsEditingAddress] = useState(false);
@@ -83,8 +87,14 @@ export default function AuthModal() {
     e.preventDefault();
     setError(null);
 
-    if (!phone.trim() || phone.length < 10) {
+    const cleanPhone = phone.trim().replace(/[\s-]/g, '');
+    if (!cleanPhone || cleanPhone.length < 10) {
       setError('Please enter a valid 11-digit Philippine mobile number.');
+      return;
+    }
+
+    if (!password.trim() || password.length < 4) {
+      setError('Please enter a password with at least 4 characters.');
       return;
     }
 
@@ -102,16 +112,27 @@ export default function AuthModal() {
           setIsLoading(false);
           return;
         }
-        await signup({
+        const res = await signup({
           name: name.trim(),
           phone: phone.trim(),
+          password: password.trim(),
           address: address.trim(),
           landmark: landmark.trim(),
           latitude: 14.6852,
           longitude: 121.0368,
         });
+        if (!res.success) {
+          setError(res.error || 'Failed to create account.');
+          setIsLoading(false);
+          return;
+        }
       } else {
-        await login(phone.trim(), name.trim());
+        const res = await login(phone.trim(), password.trim());
+        if (!res.success) {
+          setError(res.error || 'Failed to sign in.');
+          setIsLoading(false);
+          return;
+        }
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
@@ -416,6 +437,31 @@ export default function AuthModal() {
             </div>
           </div>
 
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={tab === 'signup' ? 'Create a password (min 4 characters)' : 'Enter your password'}
+                className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-300 focus:border-orange-500 text-xs text-slate-900 outline-none"
+              />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
           {tab === 'signup' && (
             <>
               <div>
@@ -455,26 +501,10 @@ export default function AuthModal() {
             disabled={isLoading}
             className="w-full py-3 rounded-2xl bg-orange-600 hover:bg-orange-700 active:scale-[0.99] text-white font-extrabold text-xs shadow-md shadow-orange-600/30 transition flex items-center justify-center gap-2 mt-4 cursor-pointer"
           >
-            <span>{isLoading ? 'Saving...' : tab === 'signup' ? 'Create Profile & Save Address' : 'Sign In Now'}</span>
+            <span>{isLoading ? 'Processing...' : tab === 'signup' ? 'Create Profile & Register' : 'Sign In Now'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        <div className="pt-2 text-center">
-          <button
-            type="button"
-            onClick={() => {
-              setName('Juan Dela Cruz');
-              setPhone('0917-882-4242');
-              setAddress('142 Mindanao Avenue, Bahay Toro, Project 8, Quezon City');
-              setLandmark('Near 7-Eleven, Green Gate');
-              login('0917-882-4242', 'Juan Dela Cruz');
-            }}
-            className="text-[11px] text-slate-500 hover:text-orange-600 underline font-medium cursor-pointer"
-          >
-            Quick Auto-Fill Mindanao Ave. Customer Profile
-          </button>
-        </div>
       </div>
     </div>
   );

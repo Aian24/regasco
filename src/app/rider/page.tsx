@@ -404,8 +404,8 @@ export default function RiderPortalPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customerName: 'Juan Dela Cruz',
-          customerPhone: '0917-882-4242',
+          customerName: 'Mindanao Customer (Test Dispatch)',
+          customerPhone: '0917-000-0000',
           location: {
             address: '142 Mindanao Avenue, Barangay Bahay Toro, Project 8, Quezon City',
             landmark: 'Near 7-Eleven, Green Gate',

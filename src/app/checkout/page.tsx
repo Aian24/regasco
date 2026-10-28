@@ -51,12 +51,12 @@ export default function BasketCheckoutPage() {
   const { user, openAuthModal, updateAddress } = useAuth();
 
   // Address and Contact from User Profile
-  const [customerName, setCustomerName] = useState(user?.name || 'Juan Dela Cruz');
-  const [customerPhone, setCustomerPhone] = useState(user?.phone || '0917-882-4242');
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [customerName, setCustomerName] = useState(user?.name || '');
+  const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
+  const [isEditingAddress, setIsEditingAddress] = useState(!user?.name || !user?.address);
   const [location, setLocation] = useState<DeliveryLocation>({
-    address: user?.address || '142 Mindanao Avenue, Barangay Bahay Toro, Project 8, Quezon City',
-    landmark: user?.landmark || 'Near 7-Eleven, Green Gate',
+    address: user?.address || '',
+    landmark: user?.landmark || '',
     latitude: user?.latitude || 14.6585,
     longitude: user?.longitude || 121.0252,
   });
@@ -418,24 +418,37 @@ export default function BasketCheckoutPage() {
 
             {/* Confirmed Address Summary Card */}
             {!isEditingAddress ? (
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs">
-                <div className="flex items-center justify-between">
-                  <p className="font-extrabold text-slate-900 text-sm">
-                    {customerName}
+              customerName && location.address ? (
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <p className="font-extrabold text-slate-900 text-sm">
+                      {customerName}
+                    </p>
+                    <span className="font-mono text-slate-600 font-bold">
+                      {customerPhone}
+                    </span>
+                  </div>
+                  <p className="text-slate-700 font-medium leading-relaxed">
+                    {location.address}
                   </p>
-                  <span className="font-mono text-slate-600 font-bold">
-                    {customerPhone}
-                  </span>
+                  {location.landmark && (
+                    <p className="text-[11px] text-slate-500">
+                      <strong className="text-slate-600">Landmark:</strong> {location.landmark}
+                    </p>
+                  )}
                 </div>
-                <p className="text-slate-700 font-medium leading-relaxed">
-                  {location.address}
-                </p>
-                {location.landmark && (
-                  <p className="text-[11px] text-slate-500">
-                    <strong className="text-slate-600">Landmark:</strong> {location.landmark}
-                  </p>
-                )}
-              </div>
+              ) : (
+                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center justify-between">
+                  <span>No recipient information entered yet.</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingAddress(true)}
+                    className="font-bold underline text-orange-600 cursor-pointer"
+                  >
+                    Enter Recipient Details
+                  </button>
+                </div>
+              )
             ) : (
               <div className="space-y-4 pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
