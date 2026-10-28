@@ -467,6 +467,7 @@ function OrderTrackContent({
             location={order.location}
             orderStatus={order.orderStatus}
             customerName={order.customerName}
+            riderCoordinates={order.riderCoordinates}
           />
         </div>
 

@@ -1,0 +1,72 @@
+{
+  "storeName": "REGASCO",
+  "branchName": "Mindanao Ave. Branch",
+  "logoUrl": "",
+  "address": "Mindanao Avenue, Quezon City, Metro Manila",
+  "phoneHotline": "0917-882-4242 / (02) 8920-REGASCO",
+  "deliveryFee": 50,
+  "freeDeliveryThreshold": 2000,
+  "isStoreOpen": true,
+  "operatingHours": "7:00 AM - 8:00 PM Daily",
+  "banners": [
+    {
+      "id": "banner-1",
+      "title": "FAST 20-MINUTE DELIVERY",
+      "subtitle": "Free leak testing and safe valve installation with every cylinder delivered.",
+      "badge": "PROMO",
+      "imageUrl": "/images/regasco-11kg.jpg",
+      "isActive": true
+    },
+    {
+      "id": "banner-2",
+      "title": "GENUINE REGASCO TANKS",
+      "subtitle": "100% Calibrated tare weight with official tamper-evident security seal.",
+      "badge": "SAFETY GUARANTEE",
+      "imageUrl": "/images/regasco-sk.jpg",
+      "isActive": true
+    }
+  ],
+  "mapSettings": {
+    "depotLat": 14.6852,
+    "depotLng": 121.0368,
+    "depotAddress": "Mindanao Ave. Central Depot, Novaliches / Quezon City",
+    "defaultZoom": 14
+  },
+  "adminCredentials": {
+    "username": "admin",
+    "passwordHash": "adminregasco"
+  },
+  "riders": [
+    {
+      "id": "rider-1",
+      "name": "Kuya Jun Santos",
+      "phone": "0917-555-1201",
+      "plateNumber": "QC-8821-MC",
+      "status": "OFFLINE",
+      "pin": "1234"
+    },
+    {
+      "id": "rider-2",
+      "name": "Carlo Mendoza",
+      "phone": "0918-444-9382",
+      "plateNumber": "NCR-4912-MC",
+      "status": "OFFLINE",
+      "pin": "1234"
+    },
+    {
+      "id": "rider-3",
+      "name": "Mark Reyes",
+      "phone": "0922-111-6789",
+      "plateNumber": "QC-3109-MC",
+      "status": "AVAILABLE",
+      "pin": "1234"
+    }
+  ],
+  "gcash": {
+    "accountName": "REGASCO MINDANAO AVE.",
+    "accountNumber": "0917-882-4242",
+    "qrImageUrl": "/images/regasco-qr-gcash.jpg",
+    "isEnabled": true
+  },
+  "codEnabled": true
+}

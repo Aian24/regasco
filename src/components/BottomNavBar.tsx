@@ -17,8 +17,8 @@ export default function BottomNavBar({ onOpenTrackModal }: BottomNavBarProps) {
   const { totalItemCount } = useCart();
   const { openAuthModal, isAuthenticated } = useAuth();
 
-  // Hide on admin portal
-  if (pathname.startsWith('/admin')) {
+  // Hide on admin and rider portals
+  if (pathname.startsWith('/admin') || pathname.startsWith('/rider')) {
     return null;
   }
 

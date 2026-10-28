@@ -98,7 +98,7 @@ export const INITIAL_SETTINGS: StoreSettings = {
   },
   adminCredentials: {
     username: 'admin',
-    passwordHash: 'admin123',
+    passwordHash: 'adminregasco',
   },
   riders: [
     {
@@ -107,6 +107,8 @@ export const INITIAL_SETTINGS: StoreSettings = {
       phone: '0917-555-1201',
       plateNumber: 'QC-8821-MC',
       status: 'AVAILABLE',
+      pin: '1234',
+      username: 'rider_jun',
     },
     {
       id: 'rider-2',
@@ -114,6 +116,8 @@ export const INITIAL_SETTINGS: StoreSettings = {
       phone: '0918-444-9382',
       plateNumber: 'NCR-4912-MC',
       status: 'AVAILABLE',
+      pin: '1234',
+      username: 'rider_carlo',
     },
     {
       id: 'rider-3',
@@ -121,6 +125,8 @@ export const INITIAL_SETTINGS: StoreSettings = {
       phone: '0922-111-6789',
       plateNumber: 'QC-3109-MC',
       status: 'AVAILABLE',
+      pin: '1234',
+      username: 'rider_mark',
     },
   ],
   gcash: {

@@ -42,6 +42,12 @@ import {
   ChevronDown,
   ChevronRight,
   TrendingUp,
+  Bell,
+  Sparkles,
+  Bike,
+  Key,
+  UserPlus,
+  Power,
 } from 'lucide-react';
 import {
   Order,
@@ -63,8 +69,44 @@ const AdminDispatchMap = dynamic(
   { ssr: false }
 );
 
-// Synthesize audio chime using Web Audio API
-function playOrderChime() {
+export interface AdminNotificationItem {
+  id: string;
+  type: 'NEW_ORDER' | 'NEEDS_VERIFICATION' | 'DELIVERED' | 'DISPATCHED';
+  title: string;
+  message: string;
+  orderCode?: string;
+  orderId?: string;
+  timeAgo: string;
+  timestamp: number;
+}
+
+// Order priority ranking helper:
+// 1: NEEDS_VERIFICATION (PENDING_PAYMENT, unverified safety/payment) -> ALWAYS FIRST
+// 2: NEEDS_DISPATCH (PREPARING, ORDER_CONFIRMED)
+// 3: IN_TRANSIT (OUT_FOR_DELIVERY)
+// 4: DELIVERED
+// 5: CANCELLED / REJECTED
+export function getAdminOrderPriority(o: Order): number {
+  if (
+    o.orderStatus === 'PENDING_PAYMENT' ||
+    (o.orderStatus === 'ORDER_CONFIRMED' && !o.safetyCheckVerified)
+  ) {
+    return 1;
+  }
+  if (o.orderStatus === 'ORDER_CONFIRMED' || o.orderStatus === 'PREPARING') {
+    return 2;
+  }
+  if (o.orderStatus === 'OUT_FOR_DELIVERY') {
+    return 3;
+  }
+  if (o.orderStatus === 'DELIVERED') {
+    return 4;
+  }
+  return 5;
+}
+
+// 1. Synthesize New Order audio chime (Double clear bell tone)
+function playNewOrderChime() {
   try {
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContext) return;
@@ -82,7 +124,7 @@ function playOrderChime() {
     osc2.frequency.setValueAtTime(440, ctx.currentTime);
     osc2.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.15);
 
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.setValueAtTime(0.35, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
 
     osc1.connect(gain);
@@ -98,8 +140,82 @@ function playOrderChime() {
   }
 }
 
+// 2. Synthesize Verification Alert Chime (Urgent two-tone alert for GCash screenshot)
+function playVerificationChime() {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(739.99, ctx.currentTime); // F#5
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime + 0.12); // D5
+    osc.frequency.setValueAtTime(739.99, ctx.currentTime + 0.24); // F#5
+
+    gain.gain.setValueAtTime(0.35, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.45);
+  } catch (e) {
+    console.warn('Verification chime could not be played', e);
+  }
+}
+
+// 3. Synthesize Delivery Complete Chime (Celebratory ascending chord)
+function playDeliveredChime() {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 -> E5 -> G5 -> C6
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const startTime = ctx.currentTime + idx * 0.09;
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+
+      gain.gain.setValueAtTime(0.28, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.45);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.45);
+    });
+  } catch (e) {
+    console.warn('Delivered chime could not be played', e);
+  }
+}
+
+// Desktop Push Notification
+function sendAdminDesktopNotification(title: string, options?: NotificationOptions) {
+  if (typeof window !== 'undefined' && 'Notification' in window) {
+    if (Notification.permission === 'granted') {
+      try {
+        new Notification(title, {
+          icon: '/images/regasco-11kg.jpg',
+          ...options,
+        });
+      } catch (e) {}
+    } else if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }
+}
+
 export default function AdminPage() {
-  // Authentication states (Username & Password login, default: admin / admin123)
+  // Authentication states (Username & Password login, default: admin / adminregasco)
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
@@ -165,20 +281,68 @@ export default function AdminPage() {
   const [securitySuccess, setSecuritySuccess] = useState<string | null>(null);
   const [securityError, setSecurityError] = useState<string | null>(null);
 
+  // Rider Management states
+  const [isRiderModalOpen, setIsRiderModalOpen] = useState(false);
+  const [editingRider, setEditingRider] = useState<DispatchRider | null>(null);
+  const [riderForm, setRiderForm] = useState<{
+    name: string;
+    phone: string;
+    plateNumber: string;
+    pin: string;
+    status: 'AVAILABLE' | 'OFFLINE';
+  }>({
+    name: '',
+    phone: '',
+    plateNumber: '',
+    pin: '1234',
+    status: 'AVAILABLE',
+  });
+  const [isSavingRider, setIsSavingRider] = useState(false);
+  const [riderFormError, setRiderFormError] = useState<string | null>(null);
+  const [riderSearchQuery, setRiderSearchQuery] = useState('');
+  const [revealedPinRiderId, setRevealedPinRiderId] = useState<string | null>(null);
+
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const prevOrderCountRef = useRef(0);
+  // In-App Notification Center states
+  const [notifications, setNotifications] = useState<AdminNotificationItem[]>([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
 
-  // Check saved session on mount
+  const previousOrdersMapRef = useRef<Map<string, Order>>(new Map());
+  const isInitialLoadRef = useRef(true);
+
+  // Add Notification Helper
+  const addNotification = (item: {
+    type: 'NEW_ORDER' | 'NEEDS_VERIFICATION' | 'DELIVERED' | 'DISPATCHED';
+    title: string;
+    message: string;
+    orderCode?: string;
+    orderId?: string;
+  }) => {
+    const newItem: AdminNotificationItem = {
+      ...item,
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      timeAgo: 'Just now',
+      timestamp: Date.now(),
+    };
+    setNotifications((prev) => [newItem, ...prev.slice(0, 24)]);
+    setUnreadNotifCount((prev) => prev + 1);
+  };
+
+  // Check saved session & request notification permission on mount
   useEffect(() => {
     const savedToken = sessionStorage.getItem('regasco_admin_token');
     if (savedToken === 'valid') {
       setIsAuthenticated(true);
     }
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
   }, []);
 
-  // Fetch admin data
+  // Fetch admin data with real-time order diffing
   const fetchData = async (isManual = false) => {
     if (isManual) setIsRefreshing(true);
     try {
@@ -191,16 +355,92 @@ export default function AdminPage() {
         const oData = await ordersRes.json();
         const newOrders: Order[] = oData.orders || [];
 
-        // Check if new order arrived and play chime
-        if (
-          prevOrderCountRef.current > 0 &&
-          newOrders.length > prevOrderCountRef.current &&
-          soundEnabled
-        ) {
-          playOrderChime();
-          showToast('🔔 New customer order received!');
+        if (isInitialLoadRef.current) {
+          // Initial population on mount
+          previousOrdersMapRef.current = new Map(newOrders.map((o) => [o.id, o]));
+          isInitialLoadRef.current = false;
+        } else {
+          // Real-time Event Detection across all orders
+          for (const order of newOrders) {
+            const prev = previousOrdersMapRef.current.get(order.id);
+
+            if (!prev) {
+              // 1. BRAND NEW ORDER ARRIVED!
+              const isNeedsVerify =
+                order.orderStatus === 'PENDING_PAYMENT' ||
+                (order.orderStatus === 'ORDER_CONFIRMED' && !order.safetyCheckVerified);
+
+              if (soundEnabled) {
+                if (isNeedsVerify) {
+                  playVerificationChime();
+                } else {
+                  playNewOrderChime();
+                }
+              }
+
+              const alertTitle = isNeedsVerify
+                ? `⚠️ Order ${order.orderCode} Needs Verification!`
+                : `🔔 New Order ${order.orderCode} Received!`;
+              const alertMsg = `${order.customerName} • ₱${order.totalAmount.toLocaleString()} (${order.paymentMethod})`;
+
+              showToast(alertTitle);
+              sendAdminDesktopNotification(alertTitle, { body: alertMsg });
+
+              addNotification({
+                type: isNeedsVerify ? 'NEEDS_VERIFICATION' : 'NEW_ORDER',
+                title: alertTitle,
+                message: alertMsg,
+                orderCode: order.orderCode,
+                orderId: order.id,
+              });
+            } else {
+              // 2. ORDER STATUS CHANGED!
+              if (prev.orderStatus !== 'DELIVERED' && order.orderStatus === 'DELIVERED') {
+                // Rider marked order as DELIVERED with POD!
+                const riderName = order.assignedRider?.name || 'Regasco Rider';
+                if (soundEnabled) playDeliveredChime();
+
+                const alertTitle = `🎉 Order ${order.orderCode} DELIVERED!`;
+                const alertMsg = `Completed by ${riderName} at ${order.customerName}`;
+
+                showToast(alertTitle);
+                sendAdminDesktopNotification(alertTitle, { body: alertMsg });
+
+                addNotification({
+                  type: 'DELIVERED',
+                  title: alertTitle,
+                  message: alertMsg,
+                  orderCode: order.orderCode,
+                  orderId: order.id,
+                });
+              } else if (
+                prev.orderStatus !== 'PENDING_PAYMENT' &&
+                order.orderStatus === 'PENDING_PAYMENT'
+              ) {
+                // Customer uploaded GCash screenshot
+                if (soundEnabled) playVerificationChime();
+
+                const alertTitle = `💳 GCash Proof Uploaded: ${order.orderCode}`;
+                const alertMsg = `${order.customerName} submitted payment proof for verification`;
+
+                showToast(alertTitle);
+                sendAdminDesktopNotification(alertTitle, { body: alertMsg });
+
+                addNotification({
+                  type: 'NEEDS_VERIFICATION',
+                  title: alertTitle,
+                  message: alertMsg,
+                  orderCode: order.orderCode,
+                  orderId: order.id,
+                });
+              }
+            }
+          }
+
+          // Update tracking map
+          previousOrdersMapRef.current = new Map(newOrders.map((o) => [o.id, o]));
         }
-        prevOrderCountRef.current = newOrders.length;
+
         setOrders(newOrders);
       }
 
@@ -223,14 +463,14 @@ export default function AdminPage() {
       fetchData();
       const interval = setInterval(() => {
         fetchData();
-      }, 8000); // Poll every 8s
+      }, 4000); // 4-second reactive polling for instant delivery & order updates
       return () => clearInterval(interval);
     }
   }, [isAuthenticated, soundEnabled]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   // Login handler
@@ -239,7 +479,7 @@ export default function AdminPage() {
     setAuthError(null);
 
     const validUser = settings?.adminCredentials?.username || 'admin';
-    const validPass = settings?.adminCredentials?.passwordHash || 'admin123';
+    const validPass = settings?.adminCredentials?.passwordHash || 'adminregasco';
 
     if (usernameInput.trim() === validUser && passwordInput === validPass) {
       setIsAuthenticated(true);
@@ -247,7 +487,7 @@ export default function AdminPage() {
       setAuthError(null);
       showToast('Welcome to Regasco Store Management');
     } else {
-      setAuthError('Invalid credentials. Default: admin / admin123');
+      setAuthError('Invalid username or password. Please try again.');
     }
   };
 
@@ -296,10 +536,14 @@ export default function AdminPage() {
     const riderName = selectedRiderName.trim() || 'Kuya Jun (Express)';
     const plateNumber = selectedPlateNumber.trim() || 'QC-8821';
 
+    const matched = settings?.riders?.find(
+      (r) => r.name.toLowerCase() === riderName.toLowerCase()
+    );
+
     const rider: DispatchRider = {
-      id: `rider_${Date.now()}`,
+      id: matched ? matched.id : `rider_${Date.now()}`,
       name: riderName,
-      phone: '0917-882-4242',
+      phone: matched ? matched.phone : '0917-882-4242',
       plateNumber: plateNumber,
       status: 'ON_DELIVERY',
     };
@@ -308,6 +552,7 @@ export default function AdminPage() {
       orderStatus: 'OUT_FOR_DELIVERY',
       assignedRider: rider,
       safetyCheckVerified: true,
+      riderCoordinates: [14.6852, 121.0368],
     });
 
     setDispatchOrderModal(null);
@@ -381,13 +626,156 @@ export default function AdminPage() {
     }
   };
 
+  // ==============================================================
+  // RIDER MANAGEMENT CRUD HANDLERS (ADMIN ONLY FLEET ACCESS)
+  // ==============================================================
+  const openCreateRiderModal = () => {
+    setEditingRider(null);
+    setRiderForm({
+      name: '',
+      phone: '',
+      plateNumber: '',
+      pin: '1234',
+      status: 'AVAILABLE',
+    });
+    setRiderFormError(null);
+    setIsRiderModalOpen(true);
+  };
+
+  const openEditRiderModal = (rider: DispatchRider) => {
+    setEditingRider(rider);
+    setRiderForm({
+      name: rider.name,
+      phone: rider.phone,
+      plateNumber: rider.plateNumber,
+      pin: rider.pin || '1234',
+      status: rider.status === 'OFFLINE' ? 'OFFLINE' : 'AVAILABLE',
+    });
+    setRiderFormError(null);
+    setIsRiderModalOpen(true);
+  };
+
+  const handleSaveRider = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!riderForm.name.trim()) {
+      setRiderFormError('Rider full name is required');
+      return;
+    }
+    if (!riderForm.phone.trim()) {
+      setRiderFormError('Phone number is required (used for rider login)');
+      return;
+    }
+    if (!riderForm.plateNumber.trim()) {
+      setRiderFormError('Vehicle plate number is required');
+      return;
+    }
+
+    setIsSavingRider(true);
+    setRiderFormError(null);
+
+    try {
+      const isEditing = !!editingRider;
+      const res = await fetch('/api/admin/riders', {
+        method: isEditing ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingRider?.id,
+          name: riderForm.name,
+          phone: riderForm.phone,
+          plateNumber: riderForm.plateNumber,
+          pin: riderForm.pin,
+          status: riderForm.status,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSettings((prev) => (prev ? { ...prev, riders: data.riders } : prev));
+        showToast(
+          isEditing
+            ? `Rider ${riderForm.name} updated successfully!`
+            : `🎉 Rider ${riderForm.name} registered! PIN: ${riderForm.pin || '1234'}`
+        );
+        setIsRiderModalOpen(false);
+      } else {
+        setRiderFormError(data.error || 'Failed to save rider');
+      }
+    } catch (err) {
+      setRiderFormError('Could not save rider account');
+    } finally {
+      setIsSavingRider(false);
+    }
+  };
+
+  const handleDeleteRider = async (rider: DispatchRider) => {
+    if (!confirm(`Are you sure you want to remove rider "${rider.name}" (${rider.plateNumber})?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/riders?id=${rider.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSettings((prev) => (prev ? { ...prev, riders: data.riders } : prev));
+        showToast(`Rider ${rider.name} removed from fleet.`);
+      } else {
+        alert(data.error || 'Failed to delete rider');
+      }
+    } catch (err) {
+      alert('Error deleting rider');
+    }
+  };
+
+  const handleToggleRiderDuty = async (rider: DispatchRider) => {
+    const nextStatus = rider.status === 'AVAILABLE' ? 'OFFLINE' : 'AVAILABLE';
+    try {
+      const res = await fetch('/api/admin/riders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: rider.id, status: nextStatus }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSettings((prev) => (prev ? { ...prev, riders: data.riders } : prev));
+        showToast(`${rider.name} is now ${nextStatus === 'AVAILABLE' ? 'On Duty' : 'Off Duty'}`);
+      }
+    } catch (err) {
+      console.warn('Failed to update status', err);
+    }
+  };
+
+  const handleResetRiderPin = async (rider: DispatchRider) => {
+    const newPin = prompt(`Enter new 4-digit PIN for ${rider.name}:`, '1234');
+    if (!newPin || newPin.trim().length !== 4) {
+      if (newPin !== null) alert('PIN must be exactly 4 digits');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/riders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: rider.id, pin: newPin.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSettings((prev) => (prev ? { ...prev, riders: data.riders } : prev));
+        showToast(`PIN for ${rider.name} reset to ${newPin.trim()}`);
+      }
+    } catch (err) {
+      alert('Failed to reset PIN');
+    }
+  };
+
   // Update Security Credentials
   const handleUpdateCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
     setSecurityError(null);
     setSecuritySuccess(null);
 
-    const currentActualPass = settings?.adminCredentials?.passwordHash || 'admin123';
+    const currentActualPass = settings?.adminCredentials?.passwordHash || 'adminregasco';
     if (currentPassword !== currentActualPass) {
       setSecurityError('Current password does not match.');
       return;
@@ -448,7 +836,9 @@ export default function AdminPage() {
     .reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
 
   const pendingPaymentCount = orders.filter(
-    (o) => o.orderStatus === 'PENDING_PAYMENT'
+    (o) =>
+      o.orderStatus === 'PENDING_PAYMENT' ||
+      (o.orderStatus === 'ORDER_CONFIRMED' && !o.safetyCheckVerified)
   ).length;
 
   const inTransitCount = orders.filter(
@@ -459,26 +849,46 @@ export default function AdminPage() {
     (o) => o.orderStatus === 'PREPARING' || o.orderStatus === 'ORDER_CONFIRMED'
   ).length;
 
-  // Filtered orders
-  const filteredOrders = orders.filter((o) => {
-    const matchesFilter =
-      orderStatusFilter === 'ALL' ||
-      (orderStatusFilter === 'NEEDS_VERIFICATION' &&
-        o.orderStatus === 'PENDING_PAYMENT') ||
-      (orderStatusFilter === 'PREPARING' &&
-        (o.orderStatus === 'PREPARING' || o.orderStatus === 'ORDER_CONFIRMED')) ||
-      (orderStatusFilter === 'OUT_FOR_DELIVERY' &&
-        o.orderStatus === 'OUT_FOR_DELIVERY') ||
-      (orderStatusFilter === 'DELIVERED' && o.orderStatus === 'DELIVERED') ||
-      (orderStatusFilter === 'CANCELLED' && o.orderStatus === 'CANCELLED') ||
-      (orderStatusFilter === 'COD' && o.paymentMethod === 'COD');
+  // Filtered orders - Prioritized with Needs Verification ALWAYS FIRST
+  const filteredOrders = orders
+    .filter((o) => {
+      const matchesFilter =
+        orderStatusFilter === 'ALL' ||
+        (orderStatusFilter === 'NEEDS_VERIFICATION' &&
+          (o.orderStatus === 'PENDING_PAYMENT' ||
+            (o.orderStatus === 'ORDER_CONFIRMED' && !o.safetyCheckVerified))) ||
+        (orderStatusFilter === 'PREPARING' &&
+          (o.orderStatus === 'PREPARING' || o.orderStatus === 'ORDER_CONFIRMED')) ||
+        (orderStatusFilter === 'OUT_FOR_DELIVERY' &&
+          o.orderStatus === 'OUT_FOR_DELIVERY') ||
+        (orderStatusFilter === 'DELIVERED' && o.orderStatus === 'DELIVERED') ||
+        (orderStatusFilter === 'CANCELLED' && o.orderStatus === 'CANCELLED') ||
+        (orderStatusFilter === 'COD' && o.paymentMethod === 'COD');
 
-    const matchesSearch =
-      o.orderCode.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
-      o.customerName.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
-      o.customerPhone.includes(orderSearchQuery);
+      const matchesSearch =
+        o.orderCode.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
+        o.customerName.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
+        o.customerPhone.includes(orderSearchQuery);
 
-    return matchesFilter && matchesSearch;
+      return matchesFilter && matchesSearch;
+    })
+    .sort((a, b) => {
+      const priorityA = getAdminOrderPriority(a);
+      const priorityB = getAdminOrderPriority(b);
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+  // Prioritized orders for Dashboard Recent Orders widget
+  const dashboardRecentOrders = [...orders].sort((a, b) => {
+    const priorityA = getAdminOrderPriority(a);
+    const priorityB = getAdminOrderPriority(b);
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   // Paginated orders
@@ -574,11 +984,6 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="p-3 bg-orange-50/70 rounded-2xl border border-orange-100 text-[11px] text-slate-600 flex items-center justify-between">
-              <span>Default Credentials:</span>
-              <span className="font-mono text-orange-600 font-bold">admin / admin123</span>
-            </div>
-
             <button
               type="submit"
               className="w-full py-3 rounded-2xl bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white font-bold text-sm shadow-md shadow-orange-500/25 transition active:scale-[0.99] cursor-pointer"
@@ -620,6 +1025,7 @@ export default function AdminPage() {
         pendingPaymentCount={pendingPaymentCount}
         inTransitCount={inTransitCount}
         totalCustomersCount={customers.length}
+        totalRidersCount={settings?.riders?.length || 0}
         storeName={settings?.storeName || 'REGASCO'}
         branchName={settings?.branchName || 'Mindanao Ave. Hub'}
         isStoreOpen={settings?.isStoreOpen ?? true}
@@ -643,6 +1049,7 @@ export default function AdminPage() {
               {activeTab === 'orders' && 'Orders & Delivery Dispatch'}
               {activeTab === 'customers' && 'Customer Directory & LTV'}
               {activeTab === 'map' && 'Live GPS Delivery Radar'}
+              {activeTab === 'riders' && 'Fleet & Riders Management'}
               {activeTab === 'products' && 'Product Catalog & Pricing'}
               {activeTab === 'branding' && 'Branding, Banners & CMS'}
               {activeTab === 'security' && 'Security & Admin Credentials'}
@@ -655,12 +1062,99 @@ export default function AdminPage() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Notification Center Bell with Unread Badge */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setIsNotificationOpen(!isNotificationOpen);
+                setUnreadNotifCount(0);
+              }}
+              className="p-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer relative"
+              title="Real-Time Order & Delivery Notifications"
+            >
+              <Bell className="w-4 h-4 text-slate-700" />
+              {unreadNotifCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-pulse shadow-sm">
+                  {unreadNotifCount > 9 ? '9+' : unreadNotifCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Dropdown Panel */}
+            {isNotificationOpen && (
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 z-50 p-4 space-y-3 animate-in fade-in zoom-in-95">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-orange-600 animate-pulse" />
+                    <span className="font-black text-sm text-slate-900">Live Order Alerts</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
+                      {notifications.length}
+                    </span>
+                  </div>
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={() => setNotifications([])}
+                      className="text-[11px] font-bold text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
+                  {notifications.length === 0 ? (
+                    <div className="text-center py-6 text-slate-400 space-y-1">
+                      <Bell className="w-6 h-6 mx-auto text-slate-300" />
+                      <p className="text-xs font-bold text-slate-600">No active alerts</p>
+                      <p className="text-[11px] text-slate-400">
+                        New orders and completed deliveries will notify you here in real-time.
+                      </p>
+                    </div>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        onClick={() => {
+                          setIsNotificationOpen(false);
+                          setActiveTab('orders');
+                          if (n.orderCode) {
+                            setOrderSearchQuery(n.orderCode);
+                            setOrderStatusFilter('ALL');
+                          }
+                        }}
+                        className={`p-3 rounded-2xl border transition cursor-pointer text-xs space-y-1 ${
+                          n.type === 'NEEDS_VERIFICATION'
+                            ? 'bg-amber-50/80 border-amber-300 hover:bg-amber-100/60'
+                            : n.type === 'DELIVERED'
+                            ? 'bg-emerald-50/80 border-emerald-300 hover:bg-emerald-100/60'
+                            : 'bg-orange-50/60 border-orange-200 hover:bg-orange-100/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-black text-slate-900 flex items-center gap-1.5">
+                            {n.type === 'NEEDS_VERIFICATION' && '⚠️ '}
+                            {n.type === 'DELIVERED' && '🎉 '}
+                            {n.type === 'NEW_ORDER' && '🔥 '}
+                            {n.title}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-medium">{n.timeAgo}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 font-medium">{n.message}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Audio Chime Toggle */}
           <button
             type="button"
             onClick={() => {
               setSoundEnabled(!soundEnabled);
-              if (!soundEnabled) playOrderChime();
+              if (!soundEnabled) playNewOrderChime();
             }}
             className={`px-3 py-1.5 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border ${
               soundEnabled
@@ -791,13 +1285,17 @@ export default function AdminPage() {
                 </div>
 
                 <div className="space-y-2.5">
-                  {orders.slice(0, 6).map((order) => (
+                  {dashboardRecentOrders.slice(0, 6).map((order) => (
                     <div
                       key={order.id}
-                      className="bg-slate-50/80 hover:bg-white p-4 rounded-2xl border border-slate-200/70 hover:border-orange-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition shadow-2xs"
+                      className={`p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition shadow-2xs ${
+                        order.orderStatus === 'PENDING_PAYMENT'
+                          ? 'bg-amber-50/60 border-2 border-amber-400 hover:border-amber-500'
+                          : 'bg-slate-50/80 hover:bg-white border border-slate-200/70 hover:border-orange-300'
+                      }`}
                     >
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-black text-orange-600 font-mono">
                             {order.orderCode}
                           </span>
@@ -805,17 +1303,19 @@ export default function AdminPage() {
                             {order.customerName}
                           </span>
                           <span
-                            className={`px-2 py-0.5 text-[10px] font-black rounded-full ${
+                            className={`px-2 py-0.5 text-[10px] font-black rounded-full uppercase ${
                               order.orderStatus === 'DELIVERED'
                                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                 : order.orderStatus === 'OUT_FOR_DELIVERY'
                                 ? 'bg-blue-50 text-blue-700 border border-blue-200'
                                 : order.orderStatus === 'PENDING_PAYMENT'
-                                ? 'bg-amber-50 text-amber-700 border border-amber-200 animate-pulse'
+                                ? 'bg-amber-500 text-white shadow-xs animate-pulse'
                                 : 'bg-slate-100 text-slate-700 border border-slate-200'
                             }`}
                           >
-                            {order.orderStatus.replace(/_/g, ' ')}
+                            {order.orderStatus === 'PENDING_PAYMENT'
+                              ? '⚠️ Needs Verification'
+                              : order.orderStatus.replace(/_/g, ' ')}
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500 mt-1 line-clamp-1">
@@ -832,9 +1332,13 @@ export default function AdminPage() {
                             setActiveTab('orders');
                             setOrderSearchQuery(order.orderCode);
                           }}
-                          className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-orange-600 hover:text-white text-xs font-bold text-slate-700 border border-slate-200 transition cursor-pointer"
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                            order.orderStatus === 'PENDING_PAYMENT'
+                              ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-xs'
+                              : 'bg-white hover:bg-orange-600 hover:text-white text-slate-700 border border-slate-200'
+                          }`}
                         >
-                          Manage
+                          {order.orderStatus === 'PENDING_PAYMENT' ? 'Verify Now' : 'Manage'}
                         </button>
                       </div>
                     </div>
@@ -978,12 +1482,16 @@ export default function AdminPage() {
               {paginatedOrders.map((order) => (
                 <div
                   key={order.id}
-                  className="bg-white border border-slate-200/90 hover:border-orange-300 rounded-3xl p-5 sm:p-6 shadow-xs transition space-y-4"
+                  className={`rounded-3xl p-5 sm:p-6 shadow-xs transition space-y-4 ${
+                    order.orderStatus === 'PENDING_PAYMENT'
+                      ? 'bg-amber-50/25 border-2 border-amber-400 hover:border-amber-500 shadow-amber-500/10'
+                      : 'bg-white border border-slate-200/90 hover:border-orange-300'
+                  }`}
                 >
                   {/* Top Bar of Card */}
                   <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-3.5">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-base font-black text-orange-600 font-mono tracking-wide">
                           {order.orderCode}
                         </span>
@@ -994,13 +1502,15 @@ export default function AdminPage() {
                               : order.orderStatus === 'OUT_FOR_DELIVERY'
                               ? 'bg-blue-50 text-blue-700 border border-blue-200'
                               : order.orderStatus === 'PENDING_PAYMENT'
-                              ? 'bg-amber-50 text-amber-700 border border-amber-200 animate-pulse'
+                              ? 'bg-amber-500 text-white shadow-xs animate-pulse flex items-center gap-1'
                               : order.orderStatus === 'CANCELLED'
                               ? 'bg-red-50 text-red-700 border border-red-200'
                               : 'bg-slate-100 text-slate-700 border border-slate-200'
                           }`}
                         >
-                          {order.orderStatus.replace(/_/g, ' ')}
+                          {order.orderStatus === 'PENDING_PAYMENT'
+                            ? '⚠️ Needs Verification'
+                            : order.orderStatus.replace(/_/g, ' ')}
                         </span>
                         {order.safetyCheckVerified && (
                           <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
@@ -1101,15 +1611,27 @@ export default function AdminPage() {
                   {/* Action Controls Bar */}
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
                     <div className="flex flex-wrap items-center gap-2">
-                      {/* Verify Payment Screenshot Button */}
+                      {/* Verify Payment / Delivery Proof Button */}
                       {order.paymentScreenshot && (
                         <button
                           type="button"
                           onClick={() => setInspectScreenshotOrder(order)}
-                          className="px-3.5 py-1.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                          className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                            order.orderStatus === 'DELIVERED'
+                              ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              : order.orderStatus === 'PENDING_PAYMENT'
+                              ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 shadow-xs'
+                              : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
+                          }`}
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          <span>View GCash Receipt</span>
+                          <span>
+                            {order.orderStatus === 'DELIVERED'
+                              ? 'View Delivery Proof (POD)'
+                              : order.orderStatus === 'PENDING_PAYMENT'
+                              ? 'Verify Payment Proof'
+                              : 'View GCash Receipt'}
+                          </span>
                         </button>
                       )}
 
@@ -1418,6 +1940,311 @@ export default function AdminPage() {
         {activeTab === 'map' && (
           <div className="space-y-4 animate-in fade-in duration-200 w-full">
             <AdminDispatchMap orders={orders} settings={settings} />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB: FLEET & RIDERS (ADMIN CREATION & CREDENTIAL MANAGEMENT)    */}
+        {/* ============================================================== */}
+        {activeTab === 'riders' && (
+          <div className="space-y-6 animate-in fade-in duration-200 w-full">
+            {/* Header & Controls */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white border border-slate-200/90 p-5 sm:p-6 rounded-3xl shadow-xs">
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                    <Bike className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-base text-slate-900 tracking-tight">Fleet & Riders Management</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Admin-only registration: Create official rider accounts, manage 4-digit security PINs, and toggle on-duty availability.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative w-full sm:w-64">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={riderSearchQuery}
+                    onChange={(e) => setRiderSearchQuery(e.target.value)}
+                    placeholder="Search name, phone, plate..."
+                    className="w-full pl-10 pr-3 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 outline-none focus:bg-white focus:border-orange-500 transition"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={openCreateRiderModal}
+                  className="px-4 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-orange-500/25 transition cursor-pointer whitespace-nowrap"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Register Fleet Rider</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Quick KPI Stat Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Fleet</span>
+                  <div className="w-7 h-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
+                    <Bike className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl font-black text-slate-900">
+                  {settings?.riders?.length || 0}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5">Registered rider accounts</p>
+              </div>
+
+              <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">On Duty / Active</span>
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl font-black text-emerald-600">
+                  {(settings?.riders || []).filter((r) => r.status === 'AVAILABLE').length}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5">Ready for order dispatch</p>
+              </div>
+
+              <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">In Transit</span>
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Truck className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl font-black text-blue-600">
+                  {orders.filter((o) => o.orderStatus === 'OUT_FOR_DELIVERY').length}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5">Active delivery missions</p>
+              </div>
+
+              <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Off Duty</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center">
+                    <Power className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="mt-2 text-2xl font-black text-slate-600">
+                  {(settings?.riders || []).filter((r) => r.status === 'OFFLINE').length}
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5">Signed off or inactive</p>
+              </div>
+            </div>
+
+            {/* Rider Roster Cards */}
+            {(() => {
+              const filteredRiders = (settings?.riders || []).filter((r) => {
+                const q = riderSearchQuery.toLowerCase().trim();
+                if (!q) return true;
+                return (
+                  r.name.toLowerCase().includes(q) ||
+                  r.phone.toLowerCase().includes(q) ||
+                  r.plateNumber.toLowerCase().includes(q)
+                );
+              });
+
+              if (filteredRiders.length === 0) {
+                return (
+                  <div className="bg-white border border-slate-200/90 rounded-3xl p-12 text-center shadow-xs">
+                    <div className="w-14 h-14 mx-auto rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-4">
+                      <Bike className="w-7 h-7" />
+                    </div>
+                    <h4 className="font-black text-base text-slate-900">
+                      {riderSearchQuery ? 'No matching riders found' : 'No Fleet Riders Registered Yet'}
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                      {riderSearchQuery
+                        ? `No riders matched "${riderSearchQuery}". Try another keyword or clear the search.`
+                        : 'Only administrators can create rider accounts. Click the button below to register your first delivery rider.'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={openCreateRiderModal}
+                      className="mt-5 px-5 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs inline-flex items-center gap-2 shadow-md shadow-orange-500/25 transition cursor-pointer"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      <span>Register First Rider</span>
+                    </button>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredRiders.map((rider) => {
+                    const activeMission = orders.find(
+                      (o) => o.assignedRider?.id === rider.id && o.orderStatus === 'OUT_FOR_DELIVERY'
+                    );
+                    const isPinRevealed = revealedPinRiderId === rider.id;
+                    const riderPin = rider.pin || '1234';
+                    const isAvailable = rider.status === 'AVAILABLE';
+
+                    return (
+                      <div
+                        key={rider.id}
+                        className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-xs hover:border-orange-300 transition flex flex-col justify-between"
+                      >
+                        <div className="space-y-4">
+                          {/* Card Header: Avatar, Name, Plate & Status */}
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 text-white flex items-center justify-center font-black text-sm shadow-md shadow-orange-500/20">
+                                {rider.name.charAt(0)}
+                              </div>
+                              <div>
+                                <h4 className="font-black text-sm text-slate-900 leading-tight">
+                                  {rider.name}
+                                </h4>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                                    🏍️ {rider.plateNumber}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Status badge */}
+                            <span
+                              className={`px-2.5 py-1 text-[10px] font-black rounded-full flex items-center gap-1.5 ${
+                                isAvailable
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-slate-100 text-slate-600 border border-slate-200'
+                              }`}
+                            >
+                              <span
+                                className={`w-2 h-2 rounded-full ${
+                                  isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
+                                }`}
+                              />
+                              {isAvailable ? 'On Duty' : 'Off Duty'}
+                            </span>
+                          </div>
+
+                          {/* Active Mission Alert */}
+                          {activeMission && (
+                            <div className="p-2.5 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <Truck className="w-3.5 h-3.5 text-blue-600 animate-bounce" />
+                                <span className="font-bold text-blue-900">
+                                  Delivering {activeMission.orderCode}
+                                </span>
+                              </div>
+                              <span className="font-mono text-[10px] bg-blue-600 text-white font-bold px-2 py-0.5 rounded-full">
+                                In Transit
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Credentials & Login Info */}
+                          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-500 text-[11px] flex items-center gap-1">
+                                <PhoneCall className="w-3 h-3 text-slate-400" />
+                                Login Phone:
+                              </span>
+                              <span className="font-mono font-bold text-slate-800">
+                                {rider.phone}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                              <span className="text-slate-500 text-[11px] flex items-center gap-1">
+                                <Key className="w-3 h-3 text-slate-400" />
+                                Security PIN:
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-bold text-orange-600 tracking-wider">
+                                  {isPinRevealed ? riderPin : '••••'}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setRevealedPinRiderId(isPinRevealed ? null : rider.id)
+                                  }
+                                  title={isPinRevealed ? 'Hide PIN' : 'Reveal PIN'}
+                                  className="text-slate-400 hover:text-slate-700 p-0.5 rounded cursor-pointer"
+                                >
+                                  {isPinRevealed ? (
+                                    <EyeOff className="w-3.5 h-3.5" />
+                                  ) : (
+                                    <Eye className="w-3.5 h-3.5" />
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleResetRiderPin(rider)}
+                                  title="Reset PIN"
+                                  className="text-[10px] text-orange-600 font-bold hover:underline cursor-pointer ml-1"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 text-[10px] text-slate-400">
+                              <span>Login URL:</span>
+                              <Link
+                                href="/rider"
+                                target="_blank"
+                                className="text-blue-600 hover:underline flex items-center gap-1 font-semibold"
+                              >
+                                <span>/rider</span>
+                                <ExternalLink className="w-2.5 h-2.5" />
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action buttons footer */}
+                        <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleRiderDuty(rider)}
+                            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                              isAvailable
+                                ? 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs'
+                            }`}
+                          >
+                            <Power className="w-3.5 h-3.5" />
+                            <span>{isAvailable ? 'Go Off Duty' : 'Set Available'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => openEditRiderModal(rider)}
+                            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                            title="Edit Rider Details"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRider(rider)}
+                            disabled={!!activeMission}
+                            className="p-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                            title={activeMission ? 'Cannot delete while delivering' : 'Delete Rider'}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -1925,7 +2752,7 @@ export default function AdminPage() {
                     type="password"
                     required
                     value={currentPassword}
-                    placeholder="Enter current password (default: admin123)"
+                    placeholder="Enter current password"
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm outline-none focus:bg-white focus:border-orange-500"
                   />
@@ -2160,7 +2987,19 @@ export default function AdminPage() {
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-bold text-sm text-slate-900">Payment Verification</h3>
+              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                {inspectScreenshotOrder.orderStatus === 'DELIVERED' ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>Proof of Delivery (Doorstep Photo)</span>
+                  </>
+                ) : (
+                  <>
+                    <Clock className="w-4 h-4 text-amber-600" />
+                    <span>Payment Verification</span>
+                  </>
+                )}
+              </h3>
               <button
                 onClick={() => setInspectScreenshotOrder(null)}
                 className="text-slate-400 hover:text-slate-700 cursor-pointer"
@@ -2177,9 +3016,19 @@ export default function AdminPage() {
               <p>
                 <strong>Customer:</strong> {inspectScreenshotOrder.customerName} ({inspectScreenshotOrder.customerPhone})
               </p>
+              {inspectScreenshotOrder.assignedRider && inspectScreenshotOrder.orderStatus === 'DELIVERED' && (
+                <p className="text-emerald-700 font-medium">
+                  <strong>Delivered by:</strong> {inspectScreenshotOrder.assignedRider.name} ({inspectScreenshotOrder.assignedRider.plateNumber})
+                </p>
+              )}
               {inspectScreenshotOrder.paymentRefNumber && (
                 <p className="text-orange-600 font-mono font-bold">
                   Ref #: {inspectScreenshotOrder.paymentRefNumber}
+                </p>
+              )}
+              {inspectScreenshotOrder.notes && (
+                <p className="text-slate-500 italic bg-slate-50 p-2 rounded-xl border border-slate-200">
+                  Notes: {inspectScreenshotOrder.notes}
                 </p>
               )}
             </div>
@@ -2188,38 +3037,50 @@ export default function AdminPage() {
             <div className="w-full h-72 relative rounded-2xl overflow-hidden bg-slate-50 border border-slate-200">
               <Image
                 src={inspectScreenshotOrder.paymentScreenshot!}
-                alt="Payment proof screenshot"
+                alt="Proof image"
                 fill
                 className="object-contain"
               />
             </div>
 
             <div className="flex items-center gap-2 pt-2">
-              <button
-                type="button"
-                onClick={async () => {
-                  await handleUpdateOrderStatus(inspectScreenshotOrder.id, {
-                    orderStatus: 'PAYMENT_VERIFIED',
-                    paymentStatus: 'PAID',
-                  });
-                  setInspectScreenshotOrder(null);
-                }}
-                className="flex-1 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
-              >
-                <Check className="w-4 h-4" />
-                <span>Approve & Verify</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const target = inspectScreenshotOrder;
-                  setInspectScreenshotOrder(null);
-                  setRejectOrderModal(target);
-                }}
-                className="px-4 py-2.5 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold transition cursor-pointer border border-red-200"
-              >
-                Reject Proof
-              </button>
+              {inspectScreenshotOrder.orderStatus === 'DELIVERED' ? (
+                <button
+                  type="button"
+                  onClick={() => setInspectScreenshotOrder(null)}
+                  className="w-full py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition cursor-pointer"
+                >
+                  Close Window
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleUpdateOrderStatus(inspectScreenshotOrder.id, {
+                        orderStatus: 'PAYMENT_VERIFIED',
+                        paymentStatus: 'PAID',
+                      });
+                      setInspectScreenshotOrder(null);
+                    }}
+                    className="flex-1 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Approve & Verify</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const target = inspectScreenshotOrder;
+                      setInspectScreenshotOrder(null);
+                      setRejectOrderModal(target);
+                    }}
+                    className="px-4 py-2.5 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold transition cursor-pointer border border-red-200"
+                  >
+                    Reject Proof
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -2771,6 +3632,172 @@ export default function AdminPage() {
                     setIsNewProductModalOpen(false);
                   }}
                   className="px-4 py-2.5 rounded-2xl bg-slate-100 text-slate-700 text-xs font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL 7: CREATE / EDIT FLEET RIDER (ADMIN ONLY)                */}
+      {/* ============================================================== */}
+      {isRiderModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                  <Bike className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm text-slate-900">
+                    {editingRider ? 'Edit Rider Account' : 'Register New Fleet Rider'}
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    {editingRider
+                      ? 'Update contact info or credentials'
+                      : 'Admin-only creation for delivery personnel'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsRiderModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {riderFormError && (
+              <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                <span>{riderFormError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveRider} className="space-y-4 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">
+                  Rider Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={riderForm.name}
+                  onChange={(e) => setRiderForm({ ...riderForm, name: e.target.value })}
+                  placeholder="e.g. Juan Dela Cruz"
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 outline-none focus:bg-white focus:border-orange-500 transition"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">
+                    Mobile Phone <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={riderForm.phone}
+                    onChange={(e) => setRiderForm({ ...riderForm, phone: e.target.value })}
+                    placeholder="0917XXXXXXX"
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 outline-none focus:bg-white focus:border-orange-500 font-mono transition"
+                  />
+                  <span className="text-[10px] text-slate-400 block">Used as Rider Login ID</span>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">
+                    Vehicle Plate # <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={riderForm.plateNumber}
+                    onChange={(e) =>
+                      setRiderForm({ ...riderForm, plateNumber: e.target.value.toUpperCase() })
+                    }
+                    placeholder="MC-1234"
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 outline-none focus:bg-white focus:border-orange-500 font-mono uppercase transition"
+                  />
+                  <span className="text-[10px] text-slate-400 block">Motorcycle plate code</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">
+                    4-Digit Security PIN <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    maxLength={4}
+                    required
+                    value={riderForm.pin}
+                    onChange={(e) =>
+                      setRiderForm({
+                        ...riderForm,
+                        pin: e.target.value.replace(/\D/g, '').slice(0, 4),
+                      })
+                    }
+                    placeholder="1234"
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 outline-none focus:bg-white focus:border-orange-500 font-mono tracking-widest text-center text-sm transition"
+                  />
+                  <span className="text-[10px] text-slate-400 block">Default is 1234</span>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Initial Status</label>
+                  <select
+                    value={riderForm.status}
+                    onChange={(e) =>
+                      setRiderForm({
+                        ...riderForm,
+                        status: e.target.value as 'AVAILABLE' | 'OFFLINE',
+                      })
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 outline-none focus:bg-white focus:border-orange-500 transition font-medium"
+                  >
+                    <option value="AVAILABLE">On Duty (Available)</option>
+                    <option value="OFFLINE">Off Duty (Offline)</option>
+                  </select>
+                  <span className="text-[10px] text-slate-400 block">Dispatch readiness</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-orange-50/80 border border-orange-200 text-[11px] text-orange-800 space-y-1">
+                <p className="font-bold">🔐 How Riders Sign In:</p>
+                <p>
+                  Instruct the rider to open <strong>/rider</strong> on their smartphone browser and log in with their <strong>Mobile Phone</strong> and <strong>PIN ({riderForm.pin || '1234'})</strong>.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="submit"
+                  disabled={isSavingRider}
+                  className="flex-1 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md shadow-orange-500/25"
+                >
+                  {isSavingRider ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Saving Account...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>{editingRider ? 'Save Changes' : 'Create Rider Account'}</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsRiderModalOpen(false)}
+                  className="px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer transition"
                 >
                   Cancel
                 </button>

@@ -18,6 +18,7 @@ import {
   X,
   Radio,
   TrendingUp,
+  Bike,
 } from 'lucide-react';
 
 export type AdminTab =
@@ -26,6 +27,7 @@ export type AdminTab =
   | 'sales'
   | 'customers'
   | 'map'
+  | 'riders'
   | 'products'
   | 'branding'
   | 'security'
@@ -37,6 +39,7 @@ interface AdminSidebarProps {
   pendingPaymentCount: number;
   inTransitCount: number;
   totalCustomersCount: number;
+  totalRidersCount?: number;
   storeName?: string;
   branchName?: string;
   isStoreOpen?: boolean;
@@ -51,6 +54,7 @@ export default function AdminSidebar({
   pendingPaymentCount,
   inTransitCount,
   totalCustomersCount,
+  totalRidersCount = 0,
   storeName = 'REGASCO',
   branchName = 'Mindanao Ave. Hub',
   isStoreOpen = true,
@@ -130,6 +134,23 @@ export default function AdminSidebar({
           >
             <Radio className={`w-3 h-3 ${isActive ? 'text-orange-600 animate-pulse' : 'text-orange-600 animate-ping'}`} />
             <span>Live</span>
+          </span>
+        ) : null,
+    },
+    {
+      id: 'riders' as AdminTab,
+      label: 'Fleet & Riders',
+      icon: Bike,
+      renderBadge: (isActive: boolean) =>
+        totalRidersCount > 0 ? (
+          <span
+            className={`px-2 py-0.5 text-[10px] font-black rounded-full ${
+              isActive
+                ? 'bg-white text-orange-600 shadow-xs'
+                : 'bg-orange-100 text-orange-700 border border-orange-200'
+            }`}
+          >
+            {totalRidersCount}
           </span>
         ) : null,
     },

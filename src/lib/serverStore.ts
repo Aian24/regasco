@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { Order, StoreSettings, Product } from '@/types';
+import { Order, StoreSettings, Product, DispatchRider } from '@/types';
 import { INITIAL_PRODUCTS, INITIAL_SETTINGS } from '@/data/products';
+import { isNeonConfigured, getNeonOrders, saveNeonOrder, logRiderLocation } from '@/lib/db';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
@@ -19,7 +20,7 @@ function ensureDataDir() {
   }
 }
 
-// Global in-memory fallback for serverless environments (like Vercel)
+// Global in-memory store
 const globalStore = global as unknown as {
   _regascoOrders?: Order[];
   _regascoSettings?: StoreSettings;
@@ -34,75 +35,9 @@ if (!globalStore._regascoSettings) {
   globalStore._regascoSettings = { ...INITIAL_SETTINGS };
 }
 
+// Clean initialization: NO FAKE MOCK ORDERS
 if (!globalStore._regascoOrders) {
-  globalStore._regascoOrders = [
-    {
-      id: 'demo-order-1',
-      orderCode: 'REG-8821',
-      customerName: 'Juan Dela Cruz',
-      customerPhone: '0917-123-4567',
-      location: {
-        address: '142 Mindanao Avenue, Barangay Bahay Toro, Project 8, Quezon City',
-        landmark: 'Near 7-Eleven, Green Gate',
-        latitude: 14.6585,
-        longitude: 121.0252,
-      },
-      items: [
-        {
-          productId: 'regasco-11kg',
-          productName: 'Regasco 11 KG',
-          cylinderOption: 'REFILL',
-          unitPrice: 990,
-          quantity: 1,
-          imageUrl: '/images/regasco-11kg.jpg',
-          weightKg: 11,
-        },
-      ],
-      subtotal: 990,
-      deliveryFee: 50,
-      totalAmount: 1040,
-      paymentMethod: 'GCASH_QR',
-      paymentStatus: 'PENDING_VERIFICATION',
-      paymentScreenshot: '/images/regasco-qr-gcash.jpg',
-      paymentRefNumber: 'GCASH-991823712',
-      orderStatus: 'PENDING_PAYMENT',
-      notes: 'Please test valve upon delivery',
-      createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
-      updatedAt: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
-    },
-    {
-      id: 'demo-order-2',
-      orderCode: 'REG-8820',
-      customerName: 'Maria Santos',
-      customerPhone: '0918-987-6543',
-      location: {
-        address: '45 Sauyo Road, Novaliches, Quezon City',
-        landmark: 'Near 7-Eleven store',
-        latitude: 14.6975,
-        longitude: 121.0421,
-      },
-      items: [
-        {
-          productId: 'regasco-sk',
-          productName: 'Regasco Supreme Kalan (SK)',
-          cylinderOption: 'NEW_TANK',
-          unitPrice: 1450,
-          quantity: 1,
-          imageUrl: '/images/regasco-sk.jpg',
-          weightKg: 2.7,
-        },
-      ],
-      subtotal: 1450,
-      deliveryFee: 50,
-      totalAmount: 1500,
-      paymentMethod: 'COD',
-      paymentStatus: 'UNPAID',
-      orderStatus: 'OUT_FOR_DELIVERY',
-      notes: 'Call upon arrival',
-      createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-      updatedAt: new Date(Date.now() - 1000 * 60 * 20).toISOString(),
-    },
-  ];
+  globalStore._regascoOrders = [];
 }
 
 export function getOrders(): Order[] {
@@ -110,21 +45,34 @@ export function getOrders(): Order[] {
   try {
     if (fs.existsSync(ORDERS_FILE)) {
       const data = fs.readFileSync(ORDERS_FILE, 'utf-8');
-      return JSON.parse(data);
+      const parsed: Order[] = JSON.parse(data);
+      // Filter out any legacy demo orders if found
+      const cleaned = parsed.filter((o) => !o.id.startsWith('demo-order-'));
+      globalStore._regascoOrders = cleaned;
+      return cleaned;
     }
   } catch (e) {
     console.warn('Fallback to in-memory orders', e);
   }
-  return globalStore._regascoOrders || [];
+  return (globalStore._regascoOrders || []).filter((o) => !o.id.startsWith('demo-order-'));
 }
 
 export function saveOrders(orders: Order[]): void {
-  globalStore._regascoOrders = orders;
+  // Purge any demo orders before saving
+  const cleaned = orders.filter((o) => !o.id.startsWith('demo-order-'));
+  globalStore._regascoOrders = cleaned;
   ensureDataDir();
   try {
-    fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2), 'utf-8');
+    fs.writeFileSync(ORDERS_FILE, JSON.stringify(cleaned, null, 2), 'utf-8');
   } catch (e) {
     console.warn('Could not write to orders file (serverless mode)', e);
+  }
+
+  // If Neon database is configured, sync in background
+  if (isNeonConfigured()) {
+    Promise.all(cleaned.map((o) => saveNeonOrder(o))).catch((err) =>
+      console.warn('Background Neon sync error:', err)
+    );
   }
 }
 
@@ -201,6 +149,48 @@ export function saveProducts(products: Product[]): void {
   }
 }
 
+// Update live rider coordinates and telemetry
+export function updateRiderTelemetry(
+  riderId: string,
+  coords: [number, number],
+  orderId?: string,
+  speed?: number,
+  heading?: number
+) {
+  // Update order's rider coordinates if orderId is provided
+  const orders = getOrders();
+  if (orderId) {
+    const orderIndex = orders.findIndex((o) => o.id === orderId || o.orderCode === orderId);
+    if (orderIndex !== -1) {
+      orders[orderIndex].riderCoordinates = coords;
+      orders[orderIndex].updatedAt = new Date().toISOString();
+      saveOrders(orders);
+    }
+  }
+
+  // Update rider status in settings
+  const settings = getStoreSettings();
+  if (settings.riders) {
+    const rider = settings.riders.find((r) => r.id === riderId);
+    if (rider && orderId) {
+      rider.status = 'ON_DELIVERY';
+      saveStoreSettings(settings);
+    }
+  }
+
+  // Log in Neon if configured
+  if (isNeonConfigured()) {
+    logRiderLocation({
+      riderId,
+      orderId,
+      latitude: coords[0],
+      longitude: coords[1],
+      speed,
+      heading,
+    }).catch((err) => console.warn('Neon location log error:', err));
+  }
+}
+
 // Extract customer directory from real orders
 export function getCustomers(): import('@/types').CustomerSummary[] {
   const orders = getOrders();
@@ -242,4 +232,3 @@ export function getCustomers(): import('@/types').CustomerSummary[] {
     (a, b) => new Date(b.lastOrderDate).getTime() - new Date(a.lastOrderDate).getTime()
   );
 }
-

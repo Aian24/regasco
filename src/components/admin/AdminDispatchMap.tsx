@@ -1,49 +1,98 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Order, StoreSettings } from '@/types';
-import { MapPin, Navigation, Truck, Store, CheckCircle, RefreshCw } from 'lucide-react';
+import { Order, StoreSettings, DispatchRider } from '@/types';
+import { MapPin, Navigation, Truck, Store, CheckCircle, RefreshCw, Compass, Users } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 
 interface AdminDispatchMapProps {
   orders: Order[];
   settings: StoreSettings | null;
   onStepRider?: (orderId: string, nextPointIndex: number) => void;
+  onAssignRider?: (orderId: string, rider: DispatchRider) => void;
 }
 
 // Default Depot Coordinates: Mindanao Ave North Depot
 const DEFAULT_DEPOT: [number, number] = [14.6852, 121.0368];
 
-// Real Road Waypoints along Mindanao Avenue
-const ROAD_WAYPOINTS: [number, number][] = [
-  [14.6852, 121.0368], // Point 0: Depot North Hub
-  [14.6788, 121.0342], // Point 1: Tandang Sora North
-  [14.6730, 121.0315], // Point 2: Tandang Sora Flyover
-  [14.6672, 121.0288], // Point 3: Congressional Ext.
-  [14.6620, 121.0265], // Point 4: Mindanao Ave / Congressional Ave
-  [14.6585, 121.0252], // Point 5: Customer Doorstep (Project 8 / Bahay Toro)
-];
-
 export default function AdminDispatchMap({
   orders,
   settings,
   onStepRider,
+  onAssignRider,
 }: AdminDispatchMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersLayerRef = useRef<any>(null);
+  const routeLayerRef = useRef<any>(null);
   const isInitializedRef = useRef(false);
 
-  const [activeWaypointIndex, setActiveWaypointIndex] = useState(2);
+  // Selected order for focused road trajectory
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [roadPolyline, setRoadPolyline] = useState<[number, number][]>([]);
+  const [routeStats, setRouteStats] = useState<{ distanceKm: number; durationMins: number } | null>(null);
 
-  // Active delivery orders
-  const activeOrders = orders.filter(
-    (o) => o.orderStatus === 'OUT_FOR_DELIVERY' || o.orderStatus === 'PREPARING'
-  );
+  // Priority for dispatch map: Needs Verification (1), Preparing/Confirmed (2), Out for Delivery (3)
+  const getDispatchPriority = (o: Order) => {
+    if (o.orderStatus === 'PENDING_PAYMENT') return 1;
+    if (o.orderStatus === 'ORDER_CONFIRMED' || o.orderStatus === 'PREPARING') return 2;
+    if (o.orderStatus === 'OUT_FOR_DELIVERY') return 3;
+    return 4;
+  };
+
+  // Active delivery orders - prioritized with needs verification first
+  const activeOrders = orders
+    .filter(
+      (o) =>
+        o.orderStatus === 'OUT_FOR_DELIVERY' ||
+        o.orderStatus === 'PREPARING' ||
+        o.orderStatus === 'ORDER_CONFIRMED' ||
+        o.orderStatus === 'PENDING_PAYMENT'
+    )
+    .sort((a, b) => {
+      const pA = getDispatchPriority(a);
+      const pB = getDispatchPriority(b);
+      if (pA !== pB) return pA - pB;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+  const selectedOrder = activeOrders.find((o) => o.id === selectedOrderId) || activeOrders[0] || null;
 
   const depotCoords: [number, number] = settings?.mapSettings
     ? [settings.mapSettings.depotLat, settings.mapSettings.depotLng]
     : DEFAULT_DEPOT;
+
+  // Fetch real road route for selected order
+  useEffect(() => {
+    if (!selectedOrder) return;
+    let isCancelled = false;
+
+    async function fetchRoute() {
+      const destLat = selectedOrder?.location?.latitude || DEFAULT_DEPOT[0] - 0.02;
+      const destLng = selectedOrder?.location?.longitude || DEFAULT_DEPOT[1] - 0.01;
+
+      try {
+        const res = await fetch(
+          `/api/route?fromLat=${depotCoords[0]}&fromLng=${depotCoords[1]}&toLat=${destLat}&toLng=${destLng}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (!isCancelled && data.coordinates) {
+            setRoadPolyline(data.coordinates);
+            setRouteStats({ distanceKm: data.distanceKm, durationMins: data.durationMins });
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch OSRM route for admin map:', err);
+      }
+    }
+
+    fetchRoute();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedOrder?.id, depotCoords[0], depotCoords[1]]);
 
   // Initialize Leaflet Map
   useEffect(() => {
@@ -83,24 +132,24 @@ export default function AdminDispatchMap({
         L.tileLayer(
           'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
           {
-            attribution: '&copy; OpenStreetMap contributors | Regasco Mindanao',
+            attribution: '&copy; OpenStreetMap contributors | Regasco Mindanao Radar',
             maxZoom: 19,
           }
         ).addTo(map);
 
-        // Layer group for dynamic markers
+        // Layers for dynamic markers & routes
+        const routeLayer = L.layerGroup().addTo(map);
         const markersLayer = L.layerGroup().addTo(map);
+
+        routeLayerRef.current = routeLayer;
         markersLayerRef.current = markersLayer;
         mapInstanceRef.current = map;
         isInitializedRef.current = true;
 
-        renderMarkers(L, map, markersLayer);
+        renderMapElements(L, map, markersLayer, routeLayer);
 
-        // Force Leaflet to recalculate container size
         setTimeout(() => {
-          if (map) {
-            map.invalidateSize();
-          }
+          if (map) map.invalidateSize();
         }, 200);
       } catch (err) {
         console.error('Failed to initialize Leaflet Map in AdminDispatchMap:', err);
@@ -121,21 +170,22 @@ export default function AdminDispatchMap({
     };
   }, []);
 
-  // Update markers when orders or waypoint changes
+  // Re-render markers and route polyline when state updates
   useEffect(() => {
-    if (!mapInstanceRef.current || !markersLayerRef.current) return;
+    if (!mapInstanceRef.current || !markersLayerRef.current || !routeLayerRef.current) return;
 
     import('leaflet').then((leafletModule) => {
       const L = (leafletModule as any).default || leafletModule;
-      renderMarkers(L, mapInstanceRef.current, markersLayerRef.current);
+      renderMapElements(L, mapInstanceRef.current, markersLayerRef.current, routeLayerRef.current);
     });
-  }, [orders, activeWaypointIndex]);
+  }, [orders, selectedOrderId, roadPolyline]);
 
-  const renderMarkers = (L: any, map: any, layer: any) => {
-    if (!layer || !L) return;
-    layer.clearLayers();
+  const renderMapElements = (L: any, map: any, markersLayer: any, routeLayer: any) => {
+    if (!markersLayer || !routeLayer || !L) return;
+    markersLayer.clearLayers();
+    routeLayer.clearLayers();
 
-    // 1. Depot Marker (Mindanao Ave North Hub)
+    // 1. Depot Marker
     const depotIcon = L.divIcon({
       className: 'custom-depot-pin',
       html: `
@@ -147,7 +197,7 @@ export default function AdminDispatchMap({
       iconAnchor: [19, 19],
     });
 
-    const depotMarker = L.marker(depotCoords, { icon: depotIcon }).addTo(layer);
+    const depotMarker = L.marker(depotCoords, { icon: depotIcon }).addTo(markersLayer);
     depotMarker.bindPopup(`
       <div style="font-family: sans-serif; font-size: 13px; line-height: 1.4;">
         <strong style="color: #FF5A00; font-size: 14px;">${settings?.storeName || 'REGASCO'} Central Depot</strong><br/>
@@ -156,80 +206,87 @@ export default function AdminDispatchMap({
       </div>
     `);
 
-    // 2. Road Trajectory Line for Mindanao Ave
-    L.polyline(ROAD_WAYPOINTS, {
-      color: '#FF5A00',
-      weight: 5,
-      opacity: 0.85,
-      dashArray: '8, 8',
-    }).addTo(layer);
+    // 2. Render OSRM Road Polyline if available
+    if (roadPolyline.length > 0) {
+      // Glow underlay
+      L.polyline(roadPolyline, {
+        color: '#FF5A00',
+        weight: 6,
+        opacity: 0.8,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(routeLayer);
+    }
 
-    // 3. Active Delivery Order Destinations
-    orders.forEach((order) => {
+    // 3. Render Order Pins
+    activeOrders.forEach((order) => {
       const lat = order.location?.latitude || DEFAULT_DEPOT[0] - 0.02;
       const lng = order.location?.longitude || DEFAULT_DEPOT[1] - 0.01;
+      const isSelected = selectedOrder?.id === order.id;
 
-      const isDelivered = order.orderStatus === 'DELIVERED';
       const isInTransit = order.orderStatus === 'OUT_FOR_DELIVERY';
-
-      const pinBg = isDelivered ? '#16A34A' : isInTransit ? '#FF5A00' : '#2563EB';
+      const pinBg = isInTransit ? '#FF5A00' : '#2563EB';
 
       const destIcon = L.divIcon({
         className: 'custom-dest-pin',
         html: `
-          <div style="background: ${pinBg}; color: white; padding: 4px; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2.5px solid white; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; font-weight: 900; font-size: 11px;">
+          <div style="background: ${pinBg}; color: white; padding: 4px; border-radius: 9999px; box-shadow: 0 4px 14px rgba(0,0,0,0.35); border: ${isSelected ? '3.5px solid #FEF08A' : '2.5px solid white'}; display: flex; align-items: center; justify-content: center; width: ${isSelected ? '36px' : '32px'}; height: ${isSelected ? '36px' : '32px'}; font-weight: 900; font-size: 11px;">
             ${order.orderCode.split('-')[1] || 'QC'}
           </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        iconSize: isSelected ? [36, 36] : [32, 32],
+        iconAnchor: isSelected ? [18, 18] : [16, 16],
       });
 
-      const destMarker = L.marker([lat, lng], { icon: destIcon }).addTo(layer);
+      const destMarker = L.marker([lat, lng], { icon: destIcon }).addTo(markersLayer);
+      destMarker.on('click', () => {
+        setSelectedOrderId(order.id);
+      });
+
       destMarker.bindPopup(`
-        <div style="font-family: sans-serif; font-size: 12px; line-height: 1.4; min-width: 180px;">
-          <strong style="font-size: 13px;">${order.orderCode}</strong> &bull; <span style="color: ${pinBg}; font-weight: 800;">${order.orderStatus}</span><br/>
+        <div style="font-family: sans-serif; font-size: 12px; line-height: 1.4; min-width: 190px;">
+          <strong style="font-size: 13px; color: ${pinBg};">${order.orderCode}</strong> &bull; <b>${order.orderStatus}</b><br/>
           <strong>Customer:</strong> ${order.customerName}<br/>
           <strong>Phone:</strong> ${order.customerPhone}<br/>
           <strong>Address:</strong> ${order.location.address}<br/>
+          <strong>Assigned Rider:</strong> ${order.assignedRider?.name || 'Unassigned'}<br/>
           <strong>Total:</strong> ₱${order.totalAmount.toLocaleString()}
         </div>
       `);
-    });
 
-    // 4. Moving Rider Marker
-    const riderCoords = ROAD_WAYPOINTS[activeWaypointIndex] || ROAD_WAYPOINTS[2];
-    const riderIcon = L.divIcon({
-      className: 'custom-rider-pin',
-      html: `
-        <div style="background: #FFFFFF; color: #FF5A00; border: 3px solid #FF5A00; padding: 6px; border-radius: 50%; box-shadow: 0 4px 16px rgba(255,90,0,0.5); display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2.5"><path d="M10 17h4V5H2v12h3m15 0h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-        </div>
-      `,
-      iconSize: [40, 40],
-      iconAnchor: [20, 20],
-    });
+      // 4. Moving / Live Rider Marker for this order if active
+      if (isInTransit) {
+        const riderCoords: [number, number] = order.riderCoordinates || [
+          (depotCoords[0] + lat) / 2,
+          (depotCoords[1] + lng) / 2,
+        ];
 
-    const riderMarker = L.marker(riderCoords, { icon: riderIcon }).addTo(layer);
-    riderMarker.bindPopup(`
-      <div style="font-family: sans-serif; font-size: 12px;">
-        <strong style="color: #FF5A00; font-size: 13px;">Regasco Express Rider</strong><br/>
-        <span>Rider: Kuya Jun Santos &bull; Plate # QC-8821</span><br/>
-        <span style="color: #16A34A; font-weight: bold;">● Active Delivery on Mindanao Ave</span>
-      </div>
-    `);
-  };
+        const riderIcon = L.divIcon({
+          className: 'custom-rider-pin',
+          html: `
+            <div style="background: #FFFFFF; color: #FF5A00; border: 3px solid #FF5A00; padding: 6px; border-radius: 50%; box-shadow: 0 4px 16px rgba(255,90,0,0.55); display: flex; align-items: center; justify-content: center; width: 42px; height: 42px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF5A00" stroke-width="2.5"><path d="M10 17h4V5H2v12h3m15 0h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+            </div>
+          `,
+          iconSize: [42, 42],
+          iconAnchor: [21, 21],
+        });
 
-  const handleStepForward = () => {
-    setActiveWaypointIndex((prev) => {
-      const next = prev + 1 >= ROAD_WAYPOINTS.length ? 0 : prev + 1;
-      return next;
+        const riderMarker = L.marker(riderCoords, { icon: riderIcon, zIndexOffset: 900 }).addTo(markersLayer);
+        riderMarker.bindPopup(`
+          <div style="font-family: sans-serif; font-size: 12px;">
+            <strong style="color: #FF5A00; font-size: 13px;">${order.assignedRider?.name || 'Regasco Express Rider'}</strong><br/>
+            <span>Delivering ${order.orderCode} to ${order.customerName}</span><br/>
+            <span style="color: #16A34A; font-weight: bold;">● Live Road GPS Stream Active</span>
+          </div>
+        `);
+      }
     });
   };
 
   return (
     <div className="space-y-4 w-full">
-      {/* Map Control Toolbar: High Contrast White & Orange */}
+      {/* Map Control Toolbar */}
       <div className="bg-white border border-slate-200 text-slate-900 p-5 rounded-3xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
@@ -237,6 +294,9 @@ export default function AdminDispatchMap({
             <h3 className="text-base font-black text-slate-950">
               Mindanao Avenue Real-Time Dispatch Radar
             </h3>
+            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">
+              OSRM Powered
+            </span>
           </div>
           <p className="text-xs font-bold text-slate-700 mt-1">
             Depot: <span className="text-orange-600">{settings?.mapSettings?.depotAddress || 'Mindanao Ave. Central Depot'}</span> &bull; {activeOrders.length} active deliveries
@@ -244,58 +304,56 @@ export default function AdminDispatchMap({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Rider Step / Simulator button */}
-          <button
-            onClick={handleStepForward}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-black transition shadow-md shadow-orange-500/25 cursor-pointer active:scale-95"
-          >
-            <Navigation className="w-4 h-4 fill-white" />
-            <span>Step Rider Forward (Waypoint {activeWaypointIndex + 1}/{ROAD_WAYPOINTS.length})</span>
-          </button>
+          {/* Active order selector */}
+          {activeOrders.length > 0 && (
+            <select
+              value={selectedOrder?.id || ''}
+              onChange={(e) => setSelectedOrderId(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold bg-slate-50 text-slate-800 outline-none focus:border-orange-500 cursor-pointer"
+            >
+              {activeOrders.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.orderStatus === 'PENDING_PAYMENT'
+                    ? '⚠️ [VERIFY GCASH] '
+                    : o.orderStatus === 'OUT_FOR_DELIVERY'
+                    ? '🛵 [IN TRANSIT] '
+                    : '📦 [READY DISPATCH] '}
+                  {o.orderCode} &bull; {o.customerName}
+                </option>
+              ))}
+            </select>
+          )}
 
-          <button
-            onClick={() => {
-              if (mapInstanceRef.current) {
-                mapInstanceRef.current.setView(depotCoords, 14);
-              }
-            }}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-black transition cursor-pointer shadow-xs active:scale-95"
-          >
-            <Store className="w-4 h-4 text-orange-600" />
-            <span>Reset to Depot</span>
-          </button>
+          {routeStats && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-orange-800 text-xs font-black">
+              <span>{routeStats.distanceKm} km</span>
+              <span className="text-slate-400">&bull;</span>
+              <span>~{routeStats.durationMins} mins ETA</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Embedded Map Canvas: Guaranteed Visible Height and Border */}
-      <div className="relative rounded-3xl overflow-hidden border-2 border-slate-200 shadow-md bg-slate-100 w-full">
+      {/* Map Canvas Container */}
+      <div className="relative w-full h-[450px] md:h-[520px] rounded-3xl overflow-hidden border border-slate-200 shadow-md bg-slate-100">
         <div
           ref={mapContainerRef}
-          className="w-full z-10"
-          style={{ height: '620px', minHeight: '620px' }}
+          style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
         />
 
-        {/* Legend Overlay: High Contrast Card */}
-        <div className="absolute bottom-5 left-5 z-20 bg-white/95 backdrop-blur-md border border-slate-200 p-4 rounded-2xl text-xs text-slate-800 space-y-2 shadow-xl">
-          <div className="font-black text-slate-950 flex items-center gap-1.5 pb-1 border-b border-slate-100">
-            <MapPin className="w-4 h-4 text-orange-600" />
-            <span>Delivery Radar Legend</span>
+        {/* Floating Quick Legend */}
+        <div className="absolute bottom-4 left-4 z-[500] bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-lg text-xs space-y-1.5 pointer-events-auto">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-md bg-orange-600 shrink-0" />
+            <span className="font-bold text-slate-800">Mindanao Central Depot</span>
           </div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-3.5 h-3.5 rounded-full bg-orange-600 shadow-xs" />
-            <span className="font-bold">Store Depot (Mindanao Ave Hub)</span>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-blue-600 shrink-0" />
+            <span className="font-bold text-slate-800">Customer Dropoffs</span>
           </div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-3.5 h-3.5 rounded-full bg-white border-2 border-orange-600 shadow-xs" />
-            <span className="font-bold">Delivery Rider in Transit</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-3.5 h-3.5 rounded-full bg-blue-600 shadow-xs" />
-            <span className="font-bold">Preparing Orders</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-3.5 h-3.5 rounded-full bg-emerald-600 shadow-xs" />
-            <span className="font-bold">Completed Deliveries</span>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-orange-500 border border-white shrink-0 animate-pulse" />
+            <span className="font-bold text-slate-800">Live GPS Motorbike</span>
           </div>
         </div>
       </div>

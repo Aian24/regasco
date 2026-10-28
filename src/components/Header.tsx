@@ -18,6 +18,7 @@ import {
   ArrowRight,
   Download,
   Smartphone,
+  Truck,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -219,6 +220,18 @@ export default function Header({
                       <span>My Orders & Deliveries</span>
                     </div>
                     <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+
+                  <Link
+                    href="/rider"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="w-full px-3 py-2 text-left rounded-xl hover:bg-orange-50 text-slate-800 hover:text-orange-600 flex items-center justify-between font-bold transition group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Truck className="w-4 h-4 text-orange-600" />
+                      <span>Rider Delivery Cockpit</span>
+                    </div>
+                    <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-black">Fleet</span>
                   </Link>
 
                   <a

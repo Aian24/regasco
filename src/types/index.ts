@@ -105,6 +105,8 @@ export interface DispatchRider {
   phone: string;
   plateNumber: string;
   status: 'AVAILABLE' | 'ON_DELIVERY' | 'OFFLINE';
+  pin?: string;
+  username?: string;
 }
 
 export interface CustomerSummary {
