@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import LocationPicker from '@/components/LocationPicker';
 import PaymentSection from '@/components/PaymentSection';
 import { DeliveryLocation, PaymentMethod } from '@/types';
+import { calculateDistanceKm, computeDeliveryFee } from '@/lib/distance';
 import {
   ArrowLeft,
   ShoppingBag,
@@ -80,6 +81,29 @@ export default function BasketCheckoutPage() {
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [refNumber, setRefNumber] = useState('');
   const [notes, setNotes] = useState('');
+
+  // Dynamic Distance & Delivery Fee Calculation from Store Depot
+  const depotCoords: [number, number] = useMemo(() => [
+    settings?.mapSettings?.depotLat || 14.6852,
+    settings?.mapSettings?.depotLng || 121.0368,
+  ], [settings]);
+
+  const distanceKm = useMemo(() => {
+    if (!location.latitude || !location.longitude) return 0;
+    return calculateDistanceKm(
+      depotCoords[0],
+      depotCoords[1],
+      location.latitude,
+      location.longitude
+    );
+  }, [depotCoords, location.latitude, location.longitude]);
+
+  const deliveryResult = useMemo(() => {
+    return computeDeliveryFee(settings, distanceKm, subtotal);
+  }, [settings, distanceKm, subtotal]);
+
+  const activeDeliveryFee = totalItemCount === 0 ? 0 : deliveryResult.fee;
+  const activeGrandTotal = subtotal + activeDeliveryFee;
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -241,6 +265,8 @@ export default function BasketCheckoutPage() {
         customerPhone: customerPhone.trim(),
         location,
         items: cartItems,
+        deliveryFee: activeDeliveryFee,
+        totalAmount: activeGrandTotal,
         paymentMethod,
         paymentScreenshot: screenshot || undefined,
         paymentRefNumber: refNumber.trim() || undefined,
@@ -481,6 +507,45 @@ export default function BasketCheckoutPage() {
 
                 {/* Interactive Leaflet Map for pinpointing */}
                 <LocationPicker location={location} onChange={setLocation} />
+
+                {/* Real-time Distance & Delivery Fee Pill */}
+                <div className="p-3.5 rounded-2xl bg-orange-50/80 border border-orange-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-orange-600 text-white flex items-center justify-center shrink-0">
+                      <Truck className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900">
+                        Distance from Store: <span className="text-orange-600 font-extrabold">{distanceKm} km</span>
+                      </p>
+                      <p className="text-[11px] text-slate-500 truncate max-w-xs">
+                        Depot: {settings?.mapSettings?.depotAddress || 'Mindanao Ave. Central Depot'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span className="font-mono font-bold text-slate-700">
+                      {deliveryResult.isFree ? (
+                        <span className="text-emerald-600 font-extrabold">FREE DELIVERY</span>
+                      ) : (
+                        `₱${activeDeliveryFee} delivery`
+                      )}
+                    </span>
+                    <span className="text-[10px] text-slate-500 block">
+                      {deliveryResult.breakdown}
+                    </span>
+                  </div>
+                </div>
+
+                {deliveryResult.isBeyondRadius && (
+                  <div className="p-3 rounded-2xl bg-amber-50 border border-amber-300 text-amber-800 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>
+                      Notice: Your address is {distanceKm} km away (exceeds standard {settings?.mapSettings?.maxDeliveryRadiusKm || 15} km radius). Please ensure courier access is available.
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -613,12 +678,12 @@ export default function BasketCheckoutPage() {
               </div>
 
               <div className="flex justify-between">
-                <span>Doorstep Delivery Fee</span>
+                <span>Doorstep Delivery Fee ({distanceKm > 0 ? `${distanceKm} km` : 'Standard'})</span>
                 <span className="font-bold text-white">
-                  {deliveryFee === 0 ? (
+                  {activeDeliveryFee === 0 ? (
                     <span className="text-emerald-400 font-extrabold">FREE DELIVERY</span>
                   ) : (
-                    `₱${deliveryFee.toLocaleString()}`
+                    `₱${activeDeliveryFee.toLocaleString()}`
                   )}
                 </span>
               </div>
@@ -626,7 +691,7 @@ export default function BasketCheckoutPage() {
               <div className="flex justify-between pt-3 border-t border-white/10 text-lg font-black text-white">
                 <span>Total Amount</span>
                 <span className="text-orange-400 text-xl font-black">
-                  ₱{grandTotal.toLocaleString()}
+                  ₱{activeGrandTotal.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -639,7 +704,7 @@ export default function BasketCheckoutPage() {
               <span>
                 {isSubmitting
                   ? 'Placing Order...'
-                  : `Place Order Now • ₱${grandTotal.toLocaleString()}`}
+                  : `Place Order Now • ₱${activeGrandTotal.toLocaleString()}`}
               </span>
             </button>
 

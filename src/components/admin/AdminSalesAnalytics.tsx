@@ -155,10 +155,23 @@ export default function AdminSalesAnalytics({
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     return orders.filter((o) => {
-      // Exclude explicitly cancelled orders
+      // Exclude explicitly cancelled or rejected orders
       if (o.orderStatus === 'CANCELLED') return false;
+      if ((o as any).orderStatus === 'REJECTED') return false;
+
+      // Note: Only count orders that have reached confirmed or paid or active fulfillment status
+      // A raw unverified PENDING_PAYMENT order without confirmed payment is not completed sales revenue
+      const isCountableSale =
+        o.orderStatus === 'DELIVERED' ||
+        o.orderStatus === 'OUT_FOR_DELIVERY' ||
+        o.orderStatus === 'PREPARING' ||
+        o.orderStatus === 'ORDER_CONFIRMED' ||
+        o.paymentStatus === 'PAID';
+
+      if (!isCountableSale) return false;
 
       const orderDate = new Date(o.createdAt);
+      if (isNaN(orderDate.getTime())) return false;
 
       if (period === 'today') {
         return orderDate >= startOfToday;
@@ -290,7 +303,7 @@ export default function AdminSalesAnalytics({
     return Object.values(map).sort((a, b) => b.revenue - a.revenue);
   }, [filteredSalesOrders]);
 
-  // Generate Timeline Data Points for Graph
+  // Generate Timeline Data Points for Graph (100% Real Order Data)
   const chartData = useMemo(() => {
     const dataPoints: {
       label: string;
@@ -299,18 +312,11 @@ export default function AdminSalesAnalytics({
       cylindersCount: number;
     }[] = [];
 
+    const now = new Date();
+
     if (period === 'today') {
-      // 24 Hour blocks (8 AM to 8 PM) with natural LPG ordering demand curve
+      // 2-hour interval time buckets across operating day (8 AM to 8 PM)
       const hours = [8, 10, 12, 14, 16, 18, 20];
-      const todayHourlyCurve: Record<number, { rev: number; ord: number; cyl: number }> = {
-        8: { rev: 2850, ord: 2, cyl: 3 },
-        10: { rev: 4400, ord: 3, cyl: 5 },
-        12: { rev: 6650, ord: 5, cyl: 8 },
-        14: { rev: 5200, ord: 4, cyl: 6 },
-        16: { rev: 5900, ord: 4, cyl: 7 },
-        18: { rev: 4150, ord: 3, cyl: 5 },
-        20: { rev: 2900, ord: 2, cyl: 4 },
-      };
 
       hours.forEach((h) => {
         const label = `${h > 12 ? h - 12 : h} ${h >= 12 ? 'PM' : 'AM'}`;
@@ -319,100 +325,139 @@ export default function AdminSalesAnalytics({
           return Math.abs(d.getHours() - h) <= 1;
         });
 
-        const actualRev = matchedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+        const actualRev = matchedOrders.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
         const actualOrd = matchedOrders.length;
         const actualCyl = matchedOrders.reduce(
-          (sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0),
+          (sum, o) => sum + (o.items || []).reduce((s, i) => s + Number(i.quantity || 0), 0),
           0
         );
 
-        const base = todayHourlyCurve[h];
         dataPoints.push({
           label,
-          revenue: actualRev > 0 ? actualRev + base.rev : base.rev,
-          ordersCount: actualOrd > 0 ? actualOrd + base.ord : base.ord,
-          cylindersCount: actualCyl > 0 ? actualCyl + base.cyl : base.cyl,
+          revenue: actualRev,
+          ordersCount: actualOrd,
+          cylindersCount: actualCyl,
         });
       });
     } else if (period === 'week') {
-      // 7 Days smooth weekly curve
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      const weekCurve = [12800, 14500, 13900, 15800, 18400, 21900, 19500];
-      const now = new Date();
+      // Past 7 calendar days
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(now.getDate() - i);
-        const dayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
-        const dayName = days[dayIdx];
+        const dayName = days[d.getDay()];
         const dateKey = d.toISOString().split('T')[0];
 
         const matched = filteredSalesOrders.filter((o) => {
-          return new Date(o.createdAt).toISOString().split('T')[0] === dateKey;
+          const orderDateStr = new Date(o.createdAt).toISOString().split('T')[0];
+          return orderDateStr === dateKey;
         });
 
-        const actualRev = matched.reduce((sum, o) => sum + o.totalAmount, 0);
+        const actualRev = matched.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
         const actualOrd = matched.length;
         const actualCyl = matched.reduce(
-          (sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0),
+          (sum, o) => sum + (o.items || []).reduce((s, i) => s + Number(i.quantity || 0), 0),
           0
         );
 
-        const baseRev = weekCurve[dayIdx];
         dataPoints.push({
           label: `${dayName} ${d.getDate()}`,
-          revenue: actualRev > 0 ? actualRev + baseRev : baseRev,
-          ordersCount: actualOrd > 0 ? actualOrd + 8 : 8,
-          cylindersCount: actualCyl > 0 ? actualCyl + 12 : 12,
+          revenue: actualRev,
+          ordersCount: actualOrd,
+          cylindersCount: actualCyl,
         });
       }
     } else if (period === 'year') {
-      // 12 Months progressive trajectory
+      // 12 Months of the current year up to current month
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const yearBase = [138000, 144000, 156000, 162000, 175000, 169000, 184000, 191000, 198000, 212000, 224000, 238000];
-      const currentMonth = new Date().getMonth();
+      const currentMonth = now.getMonth();
+
       for (let m = 0; m <= currentMonth; m++) {
         const matched = filteredSalesOrders.filter((o) => {
-          return new Date(o.createdAt).getMonth() === m;
+          const d = new Date(o.createdAt);
+          return d.getFullYear() === now.getFullYear() && d.getMonth() === m;
         });
 
-        const actualRev = matched.reduce((sum, o) => sum + o.totalAmount, 0);
+        const actualRev = matched.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
         const actualOrd = matched.length;
         const actualCyl = matched.reduce(
-          (sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0),
+          (sum, o) => sum + (o.items || []).reduce((s, i) => s + Number(i.quantity || 0), 0),
           0
         );
 
-        const baseMonthRev = yearBase[m];
         dataPoints.push({
           label: monthNames[m],
-          revenue: actualRev > 0 ? actualRev + baseMonthRev : baseMonthRev,
-          ordersCount: actualOrd > 0 ? actualOrd + 85 : 85,
-          cylindersCount: actualCyl > 0 ? actualCyl + 120 : 120,
+          revenue: actualRev,
+          ordersCount: actualOrd,
+          cylindersCount: actualCyl,
+        });
+      }
+    } else if (period === 'custom') {
+      // Custom date range
+      const start = new Date(startDate + 'T00:00:00');
+      const end = new Date(endDate + 'T23:59:59');
+      const diffMs = Math.max(1, end.getTime() - start.getTime());
+      const diffDays = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+      const stepDays = Math.max(1, Math.floor(diffDays / 7));
+
+      for (let i = 0; i < diffDays; i += stepDays) {
+        const curDate = new Date(start.getTime() + i * (1000 * 60 * 60 * 24));
+        const curNext = new Date(Math.min(end.getTime(), curDate.getTime() + stepDays * (1000 * 60 * 60 * 24)));
+
+        const matched = filteredSalesOrders.filter((o) => {
+          const d = new Date(o.createdAt);
+          return d >= curDate && d <= curNext;
+        });
+
+        const actualRev = matched.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
+        const actualOrd = matched.length;
+        const actualCyl = matched.reduce(
+          (sum, o) => sum + (o.items || []).reduce((s, i) => s + Number(i.quantity || 0), 0),
+          0
+        );
+
+        dataPoints.push({
+          label: curDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          revenue: actualRev,
+          ordersCount: actualOrd,
+          cylindersCount: actualCyl,
         });
       }
     } else {
-      // 'month' or 'custom': Smooth progressive curve across the month
-      const monthDays = [1, 4, 7, 11, 15, 19, 23, 28];
-      const monthBase = [12500, 14200, 16800, 15400, 17800, 16500, 19200, 23400];
-      monthDays.forEach((dayNum, idx) => {
-        const baseRev = monthBase[idx];
+      // 'month': Standard checkpoints across the current calendar month
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const checkpoints = [1, 5, 10, 15, 20, 25, daysInMonth];
+
+      checkpoints.forEach((dayNum, idx) => {
+        const prevDay = idx === 0 ? 1 : checkpoints[idx - 1] + 1;
+        const matched = filteredSalesOrders.filter((o) => {
+          const d = new Date(o.createdAt);
+          return (
+            d.getMonth() === now.getMonth() &&
+            d.getFullYear() === now.getFullYear() &&
+            d.getDate() >= prevDay &&
+            d.getDate() <= dayNum
+          );
+        });
+
+        const actualRev = matched.reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
+        const actualOrd = matched.length;
+        const actualCyl = matched.reduce(
+          (sum, o) => sum + (o.items || []).reduce((s, i) => s + Number(i.quantity || 0), 0),
+          0
+        );
+
         dataPoints.push({
           label: `Day ${dayNum}`,
-          revenue: baseRev,
-          ordersCount: 8 + (idx % 3),
-          cylindersCount: 12 + (idx % 4),
+          revenue: actualRev,
+          ordersCount: actualOrd,
+          cylindersCount: actualCyl,
         });
       });
-      // Inject actual orders into the latest point
-      if (dataPoints.length > 0 && totalRevenue > 0) {
-        dataPoints[dataPoints.length - 1].revenue += totalRevenue;
-        dataPoints[dataPoints.length - 1].ordersCount += totalOrdersCount;
-        dataPoints[dataPoints.length - 1].cylindersCount += cylinderBreakdown.totalUnits;
-      }
     }
 
     return dataPoints;
-  }, [period, filteredSalesOrders, totalRevenue, totalOrdersCount, cylinderBreakdown]);
+  }, [period, filteredSalesOrders, startDate, endDate]);
 
   // Compute SVG Coordinates for Area Spline Chart (Dynamically stretches full-width edge-to-edge)
   const svgWidth = Math.max(320, chartWidth);
@@ -425,7 +470,7 @@ export default function AdminSalesAnalytics({
   const graphInnerWidth = Math.max(10, svgWidth - paddingLeft - paddingRight);
 
   const maxChartValue = useMemo(() => {
-    if (chartData.length === 0) return 1000;
+    if (chartData.length === 0) return metricView === 'revenue' ? 5000 : 10;
     const maxVal = Math.max(
       ...chartData.map((d) => {
         if (metricView === 'revenue') return d.revenue;
@@ -433,6 +478,9 @@ export default function AdminSalesAnalytics({
         return d.cylindersCount;
       })
     );
+    if (maxVal === 0) {
+      return metricView === 'revenue' ? 5000 : 10;
+    }
     return Math.max(1, maxVal * 1.15); // Add 15% headroom
   }, [chartData, metricView]);
 
@@ -681,10 +729,16 @@ export default function AdminSalesAnalytics({
               {formatPHP(totalRevenue)}
             </span>
             <div className="flex items-center gap-1.5 mt-1.5">
-              <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-0.5">
-                <ArrowUpRight className="w-3 h-3" /> +14.8%
-              </span>
-              <span className="text-[11px] text-slate-400">vs previous period</span>
+              {totalRevenue > 0 ? (
+                <>
+                  <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-0.5">
+                    <ArrowUpRight className="w-3 h-3" /> Live Gross
+                  </span>
+                  <span className="text-[11px] text-slate-400">from confirmed sales</span>
+                </>
+              ) : (
+                <span className="text-[11px] text-slate-400">No revenue recorded yet</span>
+              )}
             </div>
           </div>
         </div>
@@ -704,10 +758,16 @@ export default function AdminSalesAnalytics({
               {totalOrdersCount} <span className="text-xs font-bold text-slate-400">Orders</span>
             </span>
             <div className="flex items-center gap-1.5 mt-1.5">
-              <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                100% Fulfilled
-              </span>
-              <span className="text-[11px] text-slate-400">Across Quezon City</span>
+              {totalOrdersCount > 0 ? (
+                <>
+                  <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    100% Fulfilled
+                  </span>
+                  <span className="text-[11px] text-slate-400">Across coverage area</span>
+                </>
+              ) : (
+                <span className="text-[11px] text-slate-400">Awaiting customer orders</span>
+              )}
             </div>
           </div>
         </div>
@@ -829,6 +889,15 @@ export default function AdminSalesAnalytics({
           ref={chartContainerRef}
           className="relative w-full bg-slate-50/60 rounded-2xl border border-slate-200/80 p-2 sm:p-3 overflow-hidden"
         >
+          {totalRevenue === 0 && totalOrdersCount === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div className="px-4 py-2 rounded-2xl bg-white/95 border border-slate-200 shadow-xs text-xs text-slate-500 font-bold flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-orange-500" />
+                <span>No order sales in this period yet &bull; Chart updates live as orders complete</span>
+              </div>
+            </div>
+          )}
+
           <svg
             viewBox={`0 0 ${svgWidth} ${svgHeight}`}
             preserveAspectRatio="none"
@@ -856,8 +925,12 @@ export default function AdminSalesAnalytics({
               const yPos = paddingTop + graphInnerHeight * (1 - pct);
               const gridVal = maxChartValue * pct;
               const formattedLabel =
-                metricView === 'revenue'
-                  ? `₱${Math.round(gridVal / 1000)}k`
+                gridVal === 0
+                  ? (metricView === 'revenue' ? '₱0' : '0')
+                  : metricView === 'revenue'
+                  ? gridVal >= 1000
+                    ? `₱${Math.round(gridVal / 1000)}k`
+                    : `₱${Math.round(gridVal)}`
                   : Math.round(gridVal).toString();
 
               return (
@@ -1055,12 +1128,12 @@ export default function AdminSalesAnalytics({
           <div className="space-y-2">
             <div className="w-full h-4 rounded-full bg-slate-100 overflow-hidden flex">
               <div
-                style={{ width: `${cylinderBreakdown.refillPercent || 50}%` }}
+                style={{ width: `${cylinderBreakdown.totalUnits > 0 ? cylinderBreakdown.refillPercent : 0}%` }}
                 className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-500"
                 title={`Refills: ${cylinderBreakdown.refillPercent}%`}
               />
               <div
-                style={{ width: `${cylinderBreakdown.newTankPercent || 50}%` }}
+                style={{ width: `${cylinderBreakdown.totalUnits > 0 ? cylinderBreakdown.newTankPercent : 0}%` }}
                 className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
                 title={`New Tanks: ${cylinderBreakdown.newTankPercent}%`}
               />
@@ -1069,11 +1142,11 @@ export default function AdminSalesAnalytics({
             <div className="flex justify-between text-xs font-bold">
               <div className="flex items-center gap-1.5 text-orange-600">
                 <span className="w-2.5 h-2.5 rounded-full bg-orange-600" />
-                <span>Refill: {cylinderBreakdown.refillPercent}%</span>
+                <span>Refill: {cylinderBreakdown.totalUnits > 0 ? `${cylinderBreakdown.refillPercent}%` : '0%'}</span>
               </div>
               <div className="flex items-center gap-1.5 text-blue-600">
                 <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                <span>New Tank: {cylinderBreakdown.newTankPercent}%</span>
+                <span>New Tank: {cylinderBreakdown.totalUnits > 0 ? `${cylinderBreakdown.newTankPercent}%` : '0%'}</span>
               </div>
             </div>
           </div>

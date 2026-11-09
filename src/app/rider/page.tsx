@@ -35,7 +35,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { Order, DispatchRider } from '@/types';
+import { Order, DispatchRider, StoreSettings } from '@/types';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 // Dynamically import RiderDeliveryMap to prevent SSR canvas issues
@@ -125,8 +125,9 @@ export default function RiderPortalPage() {
   const [podNotes, setPodNotes] = useState('');
   const [codCollected, setCodCollected] = useState(true);
   const [isSubmittingPod, setIsSubmittingPod] = useState(false);
+  const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
 
-  // 1. Check existing rider login session on mount
+  // 1. Check existing rider login session & load store depot settings on mount
   useEffect(() => {
     try {
       const savedSession = localStorage.getItem('regasco_rider_session');
@@ -138,6 +139,14 @@ export default function RiderPortalPage() {
       }
     } catch (e) {}
     setIsLoading(false);
+
+    // Fetch store depot settings
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.settings) setStoreSettings(d.settings);
+      })
+      .catch(() => {});
 
     // Request Web Notification permission if available
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -855,6 +864,11 @@ export default function RiderPortalPage() {
               </span>
               <RiderDeliveryMap
                 customerLocation={primaryActiveOrder.location}
+                depotCoords={
+                  storeSettings?.mapSettings?.depotLat && storeSettings?.mapSettings?.depotLng
+                    ? [storeSettings.mapSettings.depotLat, storeSettings.mapSettings.depotLng]
+                    : undefined
+                }
                 currentRiderCoords={currentCoords}
                 orderStatus={primaryActiveOrder.orderStatus}
                 customerName={primaryActiveOrder.customerName}
@@ -917,7 +931,7 @@ export default function RiderPortalPage() {
                 className="w-full py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-black text-xs sm:text-sm tracking-wide shadow-xl shadow-orange-600/30 flex items-center justify-center gap-2 transition active:scale-[0.98] cursor-pointer"
               >
                 <Truck className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                <span>START DELIVERY (Depart Mindanao Hub)</span>
+                <span>START DELIVERY (Depart {storeSettings?.storeName || 'Store Depot'})</span>
               </button>
             ) : (
               <button
@@ -955,7 +969,7 @@ export default function RiderPortalPage() {
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-black uppercase tracking-wider text-slate-400">
-                Ready at Mindanao Hub ({availableForPickup.length})
+                Ready for Pickup ({availableForPickup.length})
               </span>
               <span className="text-[11px] text-orange-400 font-bold">1-Tap Claim</span>
             </div>

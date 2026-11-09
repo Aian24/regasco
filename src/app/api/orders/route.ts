@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getOrders, saveOrders, getStoreSettings } from '@/lib/serverStore';
 import { isNeonConfigured, getNeonOrders } from '@/lib/db';
 import { Order } from '@/types';
+import { calculateDistanceKm, computeDeliveryFee } from '@/lib/distance';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -75,9 +76,18 @@ export async function POST(request: Request) {
       0
     );
 
-    // Delivery fee
+    // Dynamic Delivery Fee based on Distance (KM) & Store Settings
+    const depotLat = settings.mapSettings?.depotLat || 14.6852;
+    const depotLng = settings.mapSettings?.depotLng || 121.0368;
+    const distanceKm = calculateDistanceKm(
+      depotLat,
+      depotLng,
+      location.latitude || depotLat,
+      location.longitude || depotLng
+    );
+    const feeCalculation = computeDeliveryFee(settings, distanceKm, subtotal);
     const deliveryFee =
-      subtotal >= settings.freeDeliveryThreshold ? 0 : settings.deliveryFee;
+      body.deliveryFee !== undefined ? Number(body.deliveryFee) : feeCalculation.fee;
     const totalAmount = subtotal + deliveryFee;
 
     // Generate random 4-digit order code e.g. REG-4921

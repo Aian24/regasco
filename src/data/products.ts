@@ -95,6 +95,11 @@ export const INITIAL_SETTINGS: StoreSettings = {
     depotLng: 121.0368,
     depotAddress: 'Mindanao Ave. Central Depot, Novaliches / Quezon City',
     defaultZoom: 14,
+    deliveryPricingType: 'DISTANCE_BASED',
+    baseDeliveryFee: 50,
+    baseDistanceKm: 3,
+    ratePerKm: 10,
+    maxDeliveryRadiusKm: 15,
   },
   adminCredentials: {
     username: 'admin',

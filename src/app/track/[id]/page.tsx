@@ -99,7 +99,7 @@ function OrderTrackContent({
   const resolvedParams = use(params);
   const orderId = resolvedParams.id;
   const router = useRouter();
-  const { addToCart } = useCart();
+  const { addToCart, settings } = useCart();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -459,7 +459,7 @@ function OrderTrackContent({
               <span>Live Delivery Route Map</span>
             </h2>
             <span className="text-[11px] font-bold text-slate-500">
-              Mindanao Ave. Store ➔ Pinned Address
+              {settings?.mapSettings?.depotAddress?.split(',')[0] || 'Central Store'} ➔ Pinned Address
             </span>
           </div>
 
@@ -468,6 +468,12 @@ function OrderTrackContent({
             orderStatus={order.orderStatus}
             customerName={order.customerName}
             riderCoordinates={order.riderCoordinates}
+            depotCoordinates={
+              settings?.mapSettings?.depotLat && settings?.mapSettings?.depotLng
+                ? [settings.mapSettings.depotLat, settings.mapSettings.depotLng]
+                : undefined
+            }
+            depotAddress={settings?.mapSettings?.depotAddress || settings?.storeName}
           />
         </div>
 

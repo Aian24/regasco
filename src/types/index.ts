@@ -87,12 +87,19 @@ export interface PromoBanner {
   isActive: boolean;
 }
 
+export type DeliveryPricingType = 'FLAT' | 'DISTANCE_BASED';
+
 export interface MapSettings {
   depotLat: number;
   depotLng: number;
   depotAddress: string;
   defaultZoom: number;
   tileLayerUrl?: string;
+  deliveryPricingType?: DeliveryPricingType;
+  baseDeliveryFee?: number;
+  baseDistanceKm?: number;
+  ratePerKm?: number;
+  maxDeliveryRadiusKm?: number;
 }
 
 export interface AdminCredentials {

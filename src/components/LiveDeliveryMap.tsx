@@ -11,10 +11,12 @@ interface LiveDeliveryMapProps {
   orderStatus: OrderStatus;
   customerName?: string;
   riderCoordinates?: [number, number];
+  depotCoordinates?: [number, number];
+  depotAddress?: string;
 }
 
-// Store Depot: REGASCO Central Distribution Hub (Mindanao Ave. North)
-const STORE_COORDS: [number, number] = [14.6852, 121.0368];
+// Default Store Depot fallback
+const DEFAULT_STORE_COORDS: [number, number] = [14.6852, 121.0368];
 // Realistic Default Customer Destination (Mindanao Ave. Bahay Toro, Project 8)
 const DEST_COORDS: [number, number] = [14.6585, 121.0252];
 
@@ -23,7 +25,10 @@ export default function LiveDeliveryMap({
   orderStatus,
   customerName = 'Customer',
   riderCoordinates,
+  depotCoordinates,
+  depotAddress = 'REGASCO Central Distribution Hub',
 }: LiveDeliveryMapProps) {
+  const STORE_COORDS: [number, number] = depotCoordinates || DEFAULT_STORE_COORDS;
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const isInitializedRef = useRef(false);
@@ -222,7 +227,7 @@ export default function LiveDeliveryMap({
         .addTo(map)
         .bindPopup(`
           <div style="font-family: inherit; font-size: 12px;">
-            <b style="color: #FF5A00; font-size: 13px;">REGASCO Mindanao Ave. Hub</b><br/>
+            <b style="color: #FF5A00; font-size: 13px;">${depotAddress}</b><br/>
             <span>Central LPG Depot & Distribution Hub</span>
           </div>
         `);

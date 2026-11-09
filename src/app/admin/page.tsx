@@ -13,6 +13,7 @@ import {
   Palette,
   ShieldCheck,
   Sliders,
+  Ruler,
   Search,
   CheckCircle2,
   Clock,
@@ -66,6 +67,12 @@ import dynamic from 'next/dynamic';
 // Dynamically import AdminDispatchMap to prevent SSR canvas issues with Leaflet
 const AdminDispatchMap = dynamic(
   () => import('@/components/admin/AdminDispatchMap'),
+  { ssr: false }
+);
+
+// Dynamically import AdminDepotPicker for interactive store location & radius mapping
+const AdminDepotPicker = dynamic(
+  () => import('@/components/admin/AdminDepotPicker'),
   { ssr: false }
 );
 
@@ -2919,33 +2926,6 @@ export default function AdminPage() {
                     className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 outline-none focus:bg-white focus:border-orange-500"
                   />
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Base Delivery Fee (₱)</label>
-                  <input
-                    type="number"
-                    value={settings.deliveryFee}
-                    onChange={(e) =>
-                      setSettings({ ...settings, deliveryFee: Number(e.target.value) })
-                    }
-                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 outline-none focus:bg-white focus:border-orange-500"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Free Delivery Threshold (₱)</label>
-                  <input
-                    type="number"
-                    value={settings.freeDeliveryThreshold}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        freeDeliveryThreshold: Number(e.target.value),
-                      })
-                    }
-                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 outline-none focus:bg-white focus:border-orange-500"
-                  />
-                </div>
               </div>
 
               {/* Store Open/Close Toggle */}
@@ -2972,79 +2952,260 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Map APIs & Depot GPS */}
-            <div className="bg-white border border-slate-200/90 p-5 sm:p-6 rounded-3xl space-y-4 shadow-xs">
-              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-orange-600" />
-                <span>Depot GPS & Map Radar API</span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Depot Latitude</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={settings.mapSettings?.depotLat || 14.6852}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        mapSettings: {
-                          ...settings.mapSettings!,
-                          depotLat: Number(e.target.value),
-                        },
-                      })
-                    }
-                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 outline-none focus:bg-white focus:border-orange-500"
-                  />
+            {/* Delivery Fee & Distance Pricing Rules */}
+            <div className="bg-white border border-slate-200/90 p-5 sm:p-6 rounded-3xl space-y-5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Truck className="w-4 h-4 text-orange-600" />
+                  <h3 className="font-bold text-sm text-slate-900">
+                    Delivery Fee & Distance Pricing Rules
+                  </h3>
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Depot Longitude</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={settings.mapSettings?.depotLng || 121.0368}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        mapSettings: {
-                          ...settings.mapSettings!,
-                          depotLng: Number(e.target.value),
-                        },
-                      })
-                    }
-                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 outline-none focus:bg-white focus:border-orange-500"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Default Radar Zoom</label>
-                  <input
-                    type="number"
-                    value={settings.mapSettings?.defaultZoom || 14}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        mapSettings: {
-                          ...settings.mapSettings!,
-                          defaultZoom: Number(e.target.value),
-                        },
-                      })
-                    }
-                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-900 outline-none focus:bg-white focus:border-orange-500"
-                  />
-                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">
+                  {settings.mapSettings?.deliveryPricingType === 'FLAT' ? 'Flat Fee Mode' : 'KM Distance Mode'}
+                </span>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Depot Physical Address</label>
+              {/* Pricing Mode Toggle */}
+              <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSettings({
+                      ...settings,
+                      mapSettings: {
+                        ...settings.mapSettings!,
+                        deliveryPricingType: 'FLAT',
+                      },
+                    })
+                  }
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2 ${
+                    settings.mapSettings?.deliveryPricingType === 'FLAT'
+                      ? 'bg-white text-orange-600 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <DollarSign className="w-3.5 h-3.5" />
+                  <span>Flat Fee Anywhere</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSettings({
+                      ...settings,
+                      mapSettings: {
+                        ...settings.mapSettings!,
+                        deliveryPricingType: 'DISTANCE_BASED',
+                      },
+                    })
+                  }
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2 ${
+                    settings.mapSettings?.deliveryPricingType !== 'FLAT'
+                      ? 'bg-white text-orange-600 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Ruler className="w-3.5 h-3.5" />
+                  <span>Distance-Based (Per KM)</span>
+                </button>
+              </div>
+
+              {/* Pricing Form Fields */}
+              {settings.mapSettings?.deliveryPricingType === 'FLAT' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">Flat Delivery Fee (₱)</label>
+                    <input
+                      type="number"
+                      value={settings.deliveryFee}
+                      onChange={(e) =>
+                        setSettings({ ...settings, deliveryFee: Number(e.target.value) })
+                      }
+                      className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-900 outline-none focus:bg-white focus:border-orange-500"
+                    />
+                    <p className="text-[11px] text-slate-500">Fixed rate applied to every delivery</p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">Free Delivery Threshold (₱)</label>
+                    <input
+                      type="number"
+                      value={settings.freeDeliveryThreshold}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          freeDeliveryThreshold: Number(e.target.value),
+                        })
+                      }
+                      className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-900 outline-none focus:bg-white focus:border-orange-500"
+                    />
+                    <p className="text-[11px] text-slate-500">Orders above this get 100% free delivery</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">Base Fee (₱)</label>
+                      <input
+                        type="number"
+                        value={settings.mapSettings?.baseDeliveryFee ?? settings.deliveryFee ?? 50}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            deliveryFee: Number(e.target.value),
+                            mapSettings: {
+                              ...settings.mapSettings!,
+                              baseDeliveryFee: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-900 outline-none focus:bg-white focus:border-orange-500"
+                      />
+                      <p className="text-[10px] text-slate-500">Initial fee</p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">Base Radius (KM)</label>
+                      <input
+                        type="number"
+                        step="0.5"
+                        value={settings.mapSettings?.baseDistanceKm ?? 3}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            mapSettings: {
+                              ...settings.mapSettings!,
+                              baseDistanceKm: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-900 outline-none focus:bg-white focus:border-orange-500"
+                      />
+                      <p className="text-[10px] text-slate-500">Included in base fee</p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">Per Extra KM (+₱)</label>
+                      <input
+                        type="number"
+                        value={settings.mapSettings?.ratePerKm ?? 10}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            mapSettings: {
+                              ...settings.mapSettings!,
+                              ratePerKm: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-900 outline-none focus:bg-white focus:border-orange-500"
+                      />
+                      <p className="text-[10px] text-slate-500">For every km past base</p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">Max Radius (KM)</label>
+                      <input
+                        type="number"
+                        value={settings.mapSettings?.maxDeliveryRadiusKm ?? 15}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            mapSettings: {
+                              ...settings.mapSettings!,
+                              maxDeliveryRadiusKm: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-900 outline-none focus:bg-white focus:border-orange-500"
+                      />
+                      <p className="text-[10px] text-slate-500">Coverage limit</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">Free Delivery Threshold (₱)</label>
+                      <input
+                        type="number"
+                        value={settings.freeDeliveryThreshold}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            freeDeliveryThreshold: Number(e.target.value),
+                          })
+                        }
+                        className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-bold text-slate-900 outline-none focus:bg-white focus:border-orange-500"
+                      />
+                      <p className="text-[10px] text-slate-500">Orders above this get 100% free delivery</p>
+                    </div>
+
+                    {/* Formula Calculation Preview */}
+                    <div className="p-3.5 bg-orange-50/70 border border-orange-200/80 rounded-2xl space-y-1 text-xs">
+                      <span className="font-bold text-orange-900 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-orange-600" />
+                        <span>Dynamic Formula Preview:</span>
+                      </span>
+                      <p className="text-slate-700">
+                        Customer at <b>5.0 km</b> from store depot pays:
+                      </p>
+                      <p className="font-mono text-orange-700 font-bold">
+                        ₱{settings.mapSettings?.baseDeliveryFee ?? 50} (first {settings.mapSettings?.baseDistanceKm ?? 3}km) + (2km × ₱{settings.mapSettings?.ratePerKm ?? 10}) = ₱
+                        {(settings.mapSettings?.baseDeliveryFee ?? 50) + 2 * (settings.mapSettings?.ratePerKm ?? 10)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Interactive Store & Depot Location Map Picker */}
+            <div className="bg-white border border-slate-200/90 p-5 sm:p-6 rounded-3xl space-y-4 shadow-xs">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-orange-600" />
+                  <span>Central Store & Depot Location on Map</span>
+                </h3>
+                <span className="text-[11px] font-bold text-slate-500">
+                  Interactive Pin & Search
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Search your store address or click and drag the pin to place your depot anywhere. This dynamically updates rider dispatch, customer live tracking, and per-km delivery fees.
+              </p>
+
+              <AdminDepotPicker
+                depotLat={settings.mapSettings?.depotLat || 14.6852}
+                depotLng={settings.mapSettings?.depotLng || 121.0368}
+                depotAddress={settings.mapSettings?.depotAddress || 'Mindanao Ave. Central Depot'}
+                maxRadiusKm={settings.mapSettings?.maxDeliveryRadiusKm || 15}
+                onChange={({ depotLat, depotLng, depotAddress }) => {
+                  setSettings({
+                    ...settings,
+                    address: depotAddress,
+                    mapSettings: {
+                      ...settings.mapSettings!,
+                      depotLat,
+                      depotLng,
+                      depotAddress,
+                    },
+                  });
+                }}
+              />
+
+              <div className="space-y-1.5 pt-2">
+                <label className="text-xs font-bold text-slate-700">
+                  Store Display Address (Auto-filled on pin move, editable)
+                </label>
                 <input
                   type="text"
                   value={settings.mapSettings?.depotAddress || 'Mindanao Ave. Central Depot'}
                   onChange={(e) =>
                     setSettings({
                       ...settings,
+                      address: e.target.value,
                       mapSettings: {
                         ...settings.mapSettings!,
                         depotAddress: e.target.value,
@@ -3055,14 +3216,14 @@ export default function AdminPage() {
                 />
               </div>
 
-              <div className="flex justify-end pt-2">
+              <div className="flex justify-end pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => handleSaveSettings(settings)}
-                  className="px-4 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-orange-500/25 transition cursor-pointer"
+                  className="px-5 py-3 rounded-2xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-orange-500/25 transition cursor-pointer active:scale-95"
                 >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>Save All Settings</span>
+                  <Save className="w-4 h-4" />
+                  <span>Save All Store & Map Settings</span>
                 </button>
               </div>
             </div>
