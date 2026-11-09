@@ -306,6 +306,21 @@ export default function RiderPortalPage() {
 
     if (isTransmittingGps && !isSimulatingDrive) {
       if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+        // Immediate initial position fix
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const coords: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+            const speed = pos.coords.speed ? Math.round(pos.coords.speed * 3.6) : 0;
+            const heading = pos.coords.heading || 0;
+            sendLocationToServer(coords, speed, heading);
+          },
+          (err) => {
+            console.warn('Initial geolocation sensor note:', err.message);
+          },
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+
+        // Continuous real-time telemetry while on the move
         watchId = navigator.geolocation.watchPosition(
           (pos) => {
             const coords: [number, number] = [pos.coords.latitude, pos.coords.longitude];
@@ -371,7 +386,7 @@ export default function RiderPortalPage() {
 
       if (res.ok) {
         setIsTransmittingGps(true);
-        setIsSimulatingDrive(true);
+        setIsSimulatingDrive(false); // Transmit actual real-time mobile GPS on live delivery
         fetchRiderOrders();
       }
     } catch (e) {
