@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Regasco LPG Delivery — Operations & User Manual</title>
-  <meta name="description" content="Complete step-by-step user, admin, and rider manual for the Regasco LPG Delivery & Live GPS Dispatch System.">
+  <title>Regasco LPG — Operations & User Manual</title>
+  <meta name="description" content="Official step-by-step visual documentation with real system images, interface mockups, and vector icons for Customers, Store Admins, and Couriers.">
   <link rel="icon" href="/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -16,26 +16,34 @@
       --primary-dark: #D94800;
       --primary-light: #FFF0E6;
       --primary-border: #FFD4BA;
-      --secondary: #1E293B;
-      --accent: #0EA5E9;
-      --success: #16A34A;
-      --warning: #F59E0B;
-      --danger: #DC2626;
-      --dark: #0F172A;
+      --slate-900: #0F172A;
       --slate-800: #1E293B;
       --slate-700: #334155;
       --slate-600: #475569;
+      --slate-500: #64748B;
       --slate-400: #94A3B8;
+      --slate-300: #CBD5E1;
       --slate-200: #E2E8F0;
       --slate-100: #F1F5F9;
       --slate-50: #F8FAFC;
       --white: #FFFFFF;
-      --radius: 16px;
-      --radius-sm: 10px;
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-      --shadow-lg: 0 10px 25px -3px rgba(15, 23, 42, 0.12), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
-      --shadow-orange: 0 8px 24px rgba(255, 90, 0, 0.22);
+      --emerald-600: #16A34A;
+      --emerald-50: #F0FDF4;
+      --emerald-200: #BBF7D0;
+      --blue-600: #2563EB;
+      --blue-50: #EFF6FF;
+      --blue-200: #BFDBFE;
+      --amber-600: #D97706;
+      --amber-50: #FFFBEB;
+      --amber-200: #FDE68A;
+      --radius-xl: 20px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 12px 30px -4px rgba(15, 23, 42, 0.12);
+      --shadow-orange: 0 8px 22px rgba(255, 90, 0, 0.24);
     }
 
     * {
@@ -46,49 +54,46 @@
 
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: #F8FAFC;
-      color: #1E293B;
+      background-color: var(--slate-50);
+      color: var(--slate-800);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       padding-bottom: 80px;
     }
 
-    /* Header & Branding */
-    header.manual-header {
-      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-      color: var(--white);
-      padding: 48px 24px 36px;
-      border-bottom: 4px solid var(--primary);
-      position: relative;
-      overflow: hidden;
-    }
-
-    header.manual-header::before {
-      content: '';
-      position: absolute;
-      top: -100px;
-      right: -100px;
-      width: 350px;
-      height: 350px;
-      background: radial-gradient(circle, rgba(255, 90, 0, 0.25) 0%, rgba(255, 90, 0, 0) 70%);
-      border-radius: 50%;
-      pointer-events: none;
-    }
-
     .container {
-      max-width: 1100px;
+      max-width: 1160px;
       margin: 0 auto;
       padding: 0 20px;
     }
 
-    .header-content {
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Top Brand Header */
+    header.manual-header {
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+      color: var(--white);
+      padding: 38px 0 32px;
+      border-bottom: 4px solid var(--primary);
       position: relative;
-      z-index: 2;
+    }
+
+    .header-content {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 24px;
+      gap: 20px;
     }
 
     .brand-group {
@@ -98,27 +103,27 @@
     }
 
     .brand-icon {
-      width: 58px;
-      height: 58px;
+      width: 52px;
+      height: 52px;
       background: linear-gradient(135deg, var(--primary) 0%, #EA580C 100%);
-      border-radius: 18px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: var(--shadow-orange);
-      border: 2px solid rgba(255, 255, 255, 0.2);
+      flex-shrink: 0;
+      color: var(--white);
     }
 
     .brand-icon svg {
-      width: 32px;
-      height: 32px;
-      fill: var(--white);
+      width: 28px;
+      height: 28px;
     }
 
     .header-title h1 {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 900;
-      letter-spacing: -0.5px;
+      letter-spacing: -0.3px;
       color: var(--white);
       display: flex;
       align-items: center;
@@ -132,7 +137,7 @@
       text-transform: uppercase;
       padding: 4px 10px;
       border-radius: 20px;
-      background: rgba(255, 90, 0, 0.25);
+      background: rgba(255, 90, 0, 0.22);
       border: 1px solid rgba(255, 90, 0, 0.5);
       color: #FFB380;
       letter-spacing: 0.5px;
@@ -147,7 +152,7 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .btn-action {
@@ -157,8 +162,8 @@
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: var(--white);
-      padding: 10px 18px;
-      border-radius: var(--radius-sm);
+      padding: 9px 16px;
+      border-radius: var(--radius-md);
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
@@ -168,7 +173,6 @@
 
     .btn-action:hover {
       background: rgba(255, 255, 255, 0.2);
-      transform: translateY(-1px);
     }
 
     .btn-action.btn-orange {
@@ -181,12 +185,12 @@
       background: var(--primary-dark);
     }
 
-    /* Role Switcher Sticky Navigation */
+    /* Sticky Tab Switcher */
     .nav-bar-wrapper {
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--slate-200);
       box-shadow: var(--shadow-sm);
@@ -195,7 +199,7 @@
     .role-tabs {
       display: flex;
       gap: 8px;
-      padding: 12px 0;
+      padding: 10px 0;
       overflow-x: auto;
       scrollbar-width: none;
     }
@@ -207,45 +211,43 @@
     .tab-btn {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 12px 22px;
-      border-radius: var(--radius);
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
       border: 2px solid transparent;
       background: transparent;
       color: var(--slate-600);
-      font-size: 14px;
-      font-weight: 700;
+      font-size: 13.5px;
+      font-weight: 800;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s ease;
     }
 
-    .tab-btn svg {
-      width: 18px;
-      height: 18px;
-      stroke-width: 2.2;
+    .tab-btn .icon svg {
+      width: 17px;
+      height: 17px;
     }
 
     .tab-btn:hover {
       background: var(--slate-100);
-      color: var(--slate-800);
+      color: var(--slate-900);
     }
 
     .tab-btn.active {
       background: var(--primary-light);
       border-color: var(--primary);
       color: var(--primary-dark);
-      box-shadow: 0 4px 12px rgba(255, 90, 0, 0.12);
     }
 
-    /* Main Manual Body */
+    /* Section Hero Cards */
     .manual-content {
-      padding: 40px 0;
+      padding: 32px 0;
     }
 
     .guide-section {
       display: none;
-      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: fadeIn 0.25s ease-out;
     }
 
     .guide-section.active {
@@ -253,356 +255,480 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Section Banner */
     .section-hero {
-      background: linear-gradient(135deg, #FFFFFF 0%, #FFF7ED 100%);
-      border: 2px solid var(--primary-border);
-      border-radius: var(--radius);
-      padding: 28px 32px;
-      margin-bottom: 32px;
-      box-shadow: var(--shadow);
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-xl);
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-sm);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 24px;
+      gap: 20px;
       flex-wrap: wrap;
     }
 
-    .section-hero-left h2 {
-      font-size: 24px;
-      font-weight: 900;
-      color: var(--slate-800);
-      display: flex;
+    .hero-badge {
+      display: inline-flex;
       align-items: center;
-      gap: 12px;
-    }
-
-    .section-hero-left p {
-      font-size: 14px;
-      color: var(--slate-600);
-      margin-top: 6px;
-      max-width: 680px;
-    }
-
-    .role-badge-lg {
-      display: inline-block;
-      padding: 6px 14px;
-      border-radius: 30px;
-      font-size: 12px;
+      gap: 6px;
+      font-size: 11.5px;
       font-weight: 800;
       text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 8px;
       letter-spacing: 0.5px;
     }
 
-    .badge-customer {
-      background: #EFF6FF;
-      color: #1D4ED8;
-      border: 1px solid #BFDBFE;
+    .badge-blue { background: var(--blue-50); color: var(--blue-600); border: 1px solid var(--blue-200); }
+    .badge-orange { background: var(--primary-light); color: var(--primary-dark); border: 1px solid var(--primary-border); }
+    .badge-green { background: var(--emerald-50); color: var(--emerald-600); border: 1px solid var(--emerald-200); }
+    .badge-purple { background: #F5F3FF; color: #7C3AED; border: 1px solid #DDD6FE; }
+
+    .section-hero h2 {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--slate-900);
     }
 
-    .badge-admin {
-      background: #FEF2F2;
-      color: #B91C1C;
-      border: 1px solid #FECACA;
+    .section-hero p {
+      font-size: 14px;
+      color: var(--slate-600);
+      margin-top: 4px;
+      max-width: 680px;
     }
 
-    .badge-rider {
-      background: #ECFDF5;
-      color: #047857;
-      border: 1px solid #A7F3D0;
-    }
-
-    .badge-faq {
-      background: #F3E8FF;
-      color: #7E22CE;
-      border: 1px solid #E9D5FF;
-    }
-
-    /* Cards & Steps */
-    .manual-grid {
+    /* Stepper Roadmap */
+    .roadmap-bar {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 24px;
-      margin-bottom: 36px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
     }
 
-    .step-card {
+    @media (max-width: 768px) {
+      .roadmap-bar {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .roadmap-step {
       background: var(--white);
       border: 1px solid var(--slate-200);
-      border-radius: var(--radius);
-      padding: 26px;
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--slate-700);
       box-shadow: var(--shadow-sm);
-      transition: all 0.2s ease;
-      position: relative;
     }
 
-    .step-card:hover {
-      border-color: var(--primary);
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-2px);
-    }
-
-    .step-num {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
+    .roadmap-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
       background: var(--primary);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Step Card: Balanced 2-Column */
+    .step-card-box {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.2s ease;
+    }
+
+    .step-card-box:hover {
+      border-color: var(--primary-border);
+    }
+
+    .step-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--slate-100);
+      padding-bottom: 14px;
+    }
+
+    .step-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary) 0%, #EA580C 100%);
       color: var(--white);
       font-size: 16px;
       font-weight: 900;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 10px rgba(255, 90, 0, 0.3);
+      box-shadow: 0 3px 10px rgba(255, 90, 0, 0.3);
+      flex-shrink: 0;
     }
 
-    .step-card h3 {
+    .step-title-wrap h3 {
       font-size: 18px;
       font-weight: 800;
-      color: var(--slate-800);
-      margin-bottom: 10px;
+      color: var(--slate-900);
+    }
+
+    .step-title-wrap p {
+      font-size: 13.5px;
+      color: var(--slate-500);
+      margin-top: 2px;
+    }
+
+    .step-body-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .step-body-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Column: Instructions */
+    .instruction-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .instruction-item {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-lg);
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .instruction-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .step-card p {
-      font-size: 14px;
-      color: var(--slate-600);
-      line-height: 1.55;
-    }
-
-    .step-card ul {
-      margin-top: 12px;
-      padding-left: 20px;
-      font-size: 13.5px;
-      color: var(--slate-700);
-    }
-
-    .step-card ul li {
-      margin-bottom: 6px;
-    }
-
-    /* Callout Boxes (GitHub-style Alerts) */
-    .callout {
-      border-radius: var(--radius);
-      padding: 18px 22px;
-      margin: 24px 0;
-      display: flex;
-      gap: 16px;
-      align-items: flex-start;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .callout svg {
-      width: 22px;
-      height: 22px;
+      justify-content: center;
       flex-shrink: 0;
       margin-top: 2px;
     }
 
-    .callout-title {
-      font-weight: 800;
-      font-size: 14px;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    .icon-box-orange { background: var(--primary-light); color: var(--primary); }
+    .icon-box-blue { background: var(--blue-50); color: var(--blue-600); }
+    .icon-box-green { background: var(--emerald-50); color: var(--emerald-600); }
+    .icon-box-amber { background: var(--amber-50); color: var(--amber-600); }
 
-    .callout-info {
-      background: #EFF6FF;
-      border: 1px solid #BFDBFE;
-      color: #1E40AF;
-    }
-    .callout-info svg { color: #2563EB; }
-
-    .callout-tip {
-      background: #ECFDF5;
-      border: 1px solid #A7F3D0;
-      color: #065F46;
-    }
-    .callout-tip svg { color: #10B981; }
-
-    .callout-warning {
-      background: #FFFBEB;
-      border: 1px solid #FDE68A;
-      color: #92400E;
-    }
-    .callout-warning svg { color: #F59E0B; }
-
-    .callout-danger {
-      background: #FEF2F2;
-      border: 1px solid #FECACA;
-      color: #991B1B;
-    }
-    .callout-danger svg { color: #EF4444; }
-
-    /* Interactive Visual Simulator Box */
-    .feature-showcase {
-      background: var(--white);
-      border: 1px solid var(--slate-200);
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 30px;
-    }
-
-    .feature-showcase h4 {
-      font-size: 16px;
+    .instruction-text h4 {
+      font-size: 13.5px;
       font-weight: 800;
       color: var(--slate-800);
-      margin-bottom: 16px;
+      margin-bottom: 2px;
+    }
+
+    .instruction-text p {
+      font-size: 12.5px;
+      color: var(--slate-600);
+      line-height: 1.5;
+    }
+
+    /* Tip Banner */
+    .tip-banner {
+      background: var(--amber-50);
+      border: 1px solid var(--amber-200);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: #92400E;
       display: flex;
       align-items: center;
+      gap: 10px;
+      font-weight: 600;
+    }
+
+    .tip-banner strong {
+      color: #B45309;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Right Column: Visual Mockup */
+    .mockup-container {
+      background: var(--slate-900);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--slate-700);
+    }
+
+    .mockup-window {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--slate-300);
+    }
+
+    .mockup-top-bar {
+      background: var(--slate-100);
+      border-bottom: 1px solid var(--slate-200);
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--slate-600);
+      font-weight: 700;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #EF4444; }
+    .dot-yellow { background: #F59E0B; }
+    .dot-green { background: #10B981; }
+
+    .mockup-content {
+      padding: 14px;
+      background: var(--slate-50);
+    }
+
+    .interactive-card {
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Product Photo Box */
+    .card-photo-box {
+      width: 100%;
+      height: 180px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #FFFFFF;
+      position: relative;
+      border: 1px solid var(--slate-200);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-photo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background-color: #FFFFFF;
+    }
+
+    .card-photo-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: var(--primary);
+      color: var(--white);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .interactive-pointer {
+      background: var(--blue-50);
+      border: 1px solid var(--blue-200);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--blue-600);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
 
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13.5px;
-      margin-top: 12px;
+    .choice-pill {
+      border: 1.5px solid var(--slate-300);
+      border-radius: var(--radius-md);
+      padding: 8px;
+      text-align: center;
+      background: var(--white);
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
     }
 
-    .data-table th, .data-table td {
-      padding: 12px 16px;
+    .choice-pill.active {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    /* Map Mockup */
+    .mock-map {
+      height: 160px;
+      background: #E2E8F0 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><path d="M0 20h40M20 0v40" stroke="%23CBD5E1" stroke-width="1.5"/></svg>');
+      border-radius: var(--radius-md);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .mock-pin {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      filter: drop-shadow(0 3px 6px rgba(255,90,0,0.4));
+    }
+
+    .pin-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+    }
+
+    .pin-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .pin-bottom {
+      width: 6px;
+      height: 6px;
+      background: var(--primary);
+      transform: rotate(45deg);
+      margin-top: -3px;
+      border-right: 2px solid white;
+      border-bottom: 2px solid white;
+    }
+
+    /* Directional Flow Connectors */
+    .step-connector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 0 24px;
+    }
+
+    .connector-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary);
+      background: var(--primary-light);
+      border: 1px solid var(--primary-border);
+      padding: 6px 16px;
+      border-radius: 20px;
+    }
+
+    /* Phone Mockup Frame for Rider */
+    .phone-mockup-frame {
+      max-width: 320px;
+      margin: 0 auto;
+      background: #0B0F19;
+      border: 5px solid #1E293B;
+      border-radius: 30px;
+      padding: 12px 10px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .phone-speaker-bar {
+      width: 48px;
+      height: 4px;
+      background: #334155;
+      border-radius: 3px;
+      margin: 0 auto 10px;
+    }
+
+    .phone-screen-ui {
+      background: #0F172A;
+      color: var(--white);
+      border-radius: 20px;
+      padding: 14px;
+      font-size: 12px;
+    }
+
+    /* Clean Data Table */
+    .clean-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .clean-table th, .clean-table td {
+      padding: 8px 10px;
       text-align: left;
       border-bottom: 1px solid var(--slate-200);
     }
 
-    .data-table th {
-      background: var(--slate-50);
+    .clean-table th {
+      background: var(--slate-100);
       font-weight: 800;
-      color: var(--slate-700);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .data-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    .badge-status {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 800;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .badge-pending { background: #FEF3C7; color: #92400E; }
-    .badge-prep { background: #E0E7FF; color: #3730A3; }
-    .badge-out { background: #FFEDD5; color: #C2410C; }
-    .badge-done { background: #DCFCE7; color: #166534; }
-    .badge-cancelled { background: #FEE2E2; color: #991B1B; }
-
-    /* Accordion FAQ */
-    .faq-item {
-      background: var(--white);
-      border: 1px solid var(--slate-200);
-      border-radius: var(--radius);
-      margin-bottom: 12px;
-      overflow: hidden;
-      transition: all 0.2s ease;
-    }
-
-    .faq-question {
-      padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      font-weight: 800;
-      font-size: 15px;
-      color: var(--slate-800);
-      user-select: none;
-    }
-
-    .faq-question:hover {
-      background: var(--slate-50);
-      color: var(--primary-dark);
-    }
-
-    .faq-answer {
-      display: none;
-      padding: 0 24px 20px;
-      font-size: 14px;
       color: var(--slate-600);
-      line-height: 1.6;
-      border-top: 1px solid var(--slate-100);
-      padding-top: 16px;
     }
 
-    .faq-item.open .faq-answer {
-      display: block;
-    }
-
-    .faq-item.open .faq-icon {
-      transform: rotate(180deg);
-    }
-
-    .faq-icon {
-      transition: transform 0.2s ease;
-    }
-
-    /* Print styling */
+    /* Print */
     @media print {
-      body {
-        background: #fff !important;
-        color: #000 !important;
-        padding-bottom: 0;
-      }
-      header.manual-header {
-        background: #fff !important;
-        color: #000 !important;
-        border-bottom: 2px solid #FF5A00;
-        padding: 20px 0;
-      }
-      .brand-icon {
-        background: #FF5A00 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      .nav-bar-wrapper, .header-actions, .btn-action {
-        display: none !important;
-      }
-      .guide-section {
-        display: block !important;
-        page-break-after: always;
-      }
-      .step-card {
-        border: 1px solid #ccc !important;
-        box-shadow: none !important;
-        break-inside: avoid;
-      }
-      .callout {
-        border: 1px solid #999 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-    }
-
-    @media (max-width: 768px) {
-      header.manual-header {
-        padding: 32px 16px 24px;
-      }
-      .header-content {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .section-hero {
-        padding: 20px;
-      }
-      .manual-grid {
-        grid-template-columns: 1fr;
-      }
+      body { background: white !important; }
+      header.manual-header, .nav-bar-wrapper, .btn-action, .step-connector { display: none !important; }
+      .guide-section { display: block !important; page-break-after: always; }
+      .step-card-box { border: 1px solid #ccc !important; box-shadow: none !important; break-inside: avoid; }
     }
   </style>
 </head>
@@ -614,443 +740,1181 @@
       <div class="header-content">
         <div class="brand-group">
           <div class="brand-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
             </svg>
           </div>
           <div class="header-title">
             <h1>
-              REGASCO LPG SYSTEM
+              REGASCO LPG DELIVERY
               <span class="badge-doc">OPERATIONS MANUAL</span>
             </h1>
-            <p>Comprehensive step-by-step documentation for Customers, Administrators, and Delivery Riders.</p>
+            <p>Step-by-step visual documentation with real system images, interface mockups, and vector icons.</p>
           </div>
         </div>
 
         <div class="header-actions">
           <button onclick="window.print()" class="btn-action">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 6 2 18 2 18 9"></polyline>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-              <rect x="6" y="14" width="12" height="8"></rect>
-            </svg>
-            Print / Save as PDF
+            <span class="icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+            </span>
+            Print Guide
           </button>
           <a href="/" class="btn-action btn-orange">
-            Open Storefront &rarr;
+            Open Storefront
+            <span class="icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+              </svg>
+            </span>
           </a>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Sticky Role Switcher Navigation -->
+  <!-- Sticky Role Tabs -->
   <div class="nav-bar-wrapper">
     <div class="container">
-      <nav class="role-tabs" aria-label="Manual Roles">
+      <nav class="role-tabs">
         <button class="tab-btn active" onclick="switchTab('customer')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="8" cy="21" r="1"></circle>
-            <circle cx="19" cy="21" r="1"></circle>
-            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
-          </svg>
-          1. Customer User Guide
+          <span class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
+            </svg>
+          </span>
+          1. Customer Ordering
         </button>
 
         <button class="tab-btn" onclick="switchTab('admin')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-          2. Store & Admin Guide
+          <span class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </span>
+          2. Store Admin & Dispatch
         </button>
 
         <button class="tab-btn" onclick="switchTab('rider')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="1" y="3" width="15" height="13"></rect>
-            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-            <circle cx="5.5" cy="18.5" r="2.5"></circle>
-            <circle cx="18.5" cy="18.5" r="2.5"></circle>
-          </svg>
-          3. Rider Cockpit Guide
+          <span class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-4-4h-3v10"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>
+            </svg>
+          </span>
+          3. Rider Delivery Cockpit
         </button>
 
         <button class="tab-btn" onclick="switchTab('faq')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          4. Map, GPS & System FAQ
+          <span class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </span>
+          4. Maps & Technical FAQ
         </button>
       </nav>
     </div>
   </div>
 
-  <!-- Manual Content -->
   <main class="manual-content">
     <div class="container">
 
-      <!-- =================================================================== -->
-      <!-- SECTION 1: CUSTOMER USER GUIDE                                      -->
-      <!-- =================================================================== -->
+      <!-- ================================================================= -->
+      <!-- SECTION 1: CUSTOMER GUIDE                                         -->
+      <!-- ================================================================= -->
       <section id="customer" class="guide-section active">
         <div class="section-hero">
-          <div class="section-hero-left">
-            <span class="role-badge-lg badge-customer">Role: Mamimili (Customer)</span>
-            <h2>How Customers Order Regasco LPG Online</h2>
-            <p>Learn how to select cylinders, choose Refill vs New Tank, pinpoint delivery GPS locations, pay via COD or GCash, and track riders on the live map.</p>
-          </div>
-        </div>
-
-        <div class="manual-grid">
-          <!-- Step 1 -->
-          <div class="step-card">
-            <div class="step-num">1</div>
-            <h3>Select Cylinder & Option</h3>
-            <p>Customers can browse the storefront and choose their required tank size:</p>
-            <ul>
-              <li><strong>11 KG Regular (Most Popular):</strong> Standard household size for kitchens and home stoves.</li>
-              <li><strong>2.7 KG Camping / Small Stove:</strong> Compact and portable tank.</li>
-              <li><strong>50 KG Commercial / Industrial:</strong> For restaurants and bakeries.</li>
-              <li><strong>Refill vs. New Tank:</strong>
-                <br>&bull; <em>Refill:</em> Swap your empty cylinder for a newly refilled certified Regasco cylinder.
-                <br>&bull; <em>New Complete Tank:</em> Includes brand new cylinder tank + valve seal.
-              </li>
-            </ul>
-          </div>
-
-          <!-- Step 2 -->
-          <div class="step-card">
-            <div class="step-num">2</div>
-            <h3>Pinpoint Delivery Location</h3>
-            <p>Accurate delivery pins ensure riders navigate straight to the gate:</p>
-            <ul>
-              <li><strong>"Use My Current Location" Button:</strong> Tapping this automatically acquires device GPS coordinates.</li>
-              <li><strong>Interactive Map Pin:</strong> Drag the orange pin directly onto your rooftop or house gate.</li>
-              <li><strong>Address & Landmark:</strong> Fill in street name, house number, and clear landmarks (e.g. <em>"Beside 7-Eleven, Green Gate"</em>).</li>
-            </ul>
-          </div>
-
-          <!-- Step 3 -->
-          <div class="step-card">
-            <div class="step-num">3</div>
-            <h3>Choose Payment Method</h3>
-            <p>Regasco offers two flexible payment channels:</p>
-            <ul>
-              <li><strong>Cash on Delivery (COD):</strong> Pay cash directly to the rider after the cylinder is delivered and leak-tested.</li>
-              <li><strong>GCash Online:</strong> Scan the official store GCash QR code, enter the 13-digit Reference Number, and upload the payment receipt screenshot.</li>
-            </ul>
-          </div>
-
-          <!-- Step 4 -->
-          <div class="step-card">
-            <div class="step-num">4</div>
-            <h3>Live Order & GPS Tracking</h3>
-            <p>After clicking <strong>Place Order</strong>, customers receive a unique Order Code (e.g., <code>REG-8921</code>):</p>
-            <ul>
-              <li><strong>Status Pipeline:</strong> Watch the order move from <em>Pending &rarr; Preparing &rarr; Out for Delivery &rarr; Delivered</em>.</li>
-              <li><strong>Live Radar:</strong> View the rider's motorcycle moving along the street in real-time.</li>
-              <li><strong>1-Tap Call:</strong> Call the assigned rider directly from the tracking page.</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="callout callout-tip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
-          </svg>
           <div>
-            <div class="callout-title">Customer Safety Standard Guarantee</div>
-            Regasco delivery riders always inspect your hose and perform a complimentary soap bubble leak-test upon connecting your LPG cylinder.
+            <span class="hero-badge badge-blue">Customer Workflow</span>
+            <h2>How to Order Regasco LPG Online</h2>
+            <p>Four straightforward steps from cylinder selection to doorstep delivery and stove safety testing.</p>
           </div>
         </div>
+
+        <!-- Stepper Roadmap -->
+        <div class="roadmap-bar">
+          <div class="roadmap-step">
+            <div class="roadmap-num">1</div>
+            <span>Select Tank & Option</span>
+          </div>
+          <div class="roadmap-step">
+            <div class="roadmap-num">2</div>
+            <span>Pin Delivery Address</span>
+          </div>
+          <div class="roadmap-step">
+            <div class="roadmap-num">3</div>
+            <span>COD or GCash Pay</span>
+          </div>
+          <div class="roadmap-step">
+            <div class="roadmap-num">4</div>
+            <span>Live GPS Tracking</span>
+          </div>
+        </div>
+
+        <!-- CUSTOMER STEP 1 -->
+        <div class="step-card-box">
+          <div class="step-card-header">
+            <div class="step-badge">1</div>
+            <div class="step-title-wrap">
+              <h3>Choose Cylinder Size & Refill Option</h3>
+              <p>Pick the cylinder size and indicate whether you are swapping an existing empty tank.</p>
+            </div>
+          </div>
+
+          <div class="step-body-grid">
+            <div class="instruction-flow">
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-orange">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Select Your Tank Size</h4>
+                  <p>11 KG is the standard household cylinder. 2.7 KG is portable for small burners; 50 KG is for commercial kitchens.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Refill vs. New Tank Package</h4>
+                  <p><b>Refill Swap (₱990):</b> Give your empty cylinder to the courier and receive a freshly refilled certified tank.</p>
+                  <p style="margin-top:4px;"><b>New Complete Tank (₱2,450):</b> Includes brand-new steel cylinder, gas, and safety valve seal.</p>
+                </div>
+              </div>
+
+              <div class="tip-banner">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                  </svg>
+                </span>
+                <span><strong>Tip:</strong> If you already have an empty LPG tank at home, choose <u>Refill Swap</u> to pay only for the gas.</span>
+              </div>
+            </div>
+
+            <!-- Visual Mockup -->
+            <div class="mockup-container">
+              <div class="mockup-window">
+                <div class="mockup-top-bar">
+                  <div class="window-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <span>Storefront: Product Selection</span>
+                </div>
+                <div class="mockup-content">
+                  <div class="interactive-card">
+                    <div class="card-photo-box">
+                      <img src="images/regasco-11kg.jpg" data-filename="regasco-11kg.jpg" class="system-img" alt="Regasco 11kg" onerror="this.src='/images/regasco-11kg.jpg'">
+                      <span class="card-photo-badge">11 KG REGULAR</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <strong style="font-size:14px; color:#0F172A;">Regasco 11 KG Cylinder</strong>
+                      <span style="font-size:14px; font-weight:800; color:#FF5A00;">₱990</span>
+                    </div>
+
+                    <div class="interactive-pointer">
+                      <span class="icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                        </svg>
+                      </span>
+                      <span>Select your option below:</span>
+                    </div>
+
+                    <div class="pill-group">
+                      <div class="choice-pill active">
+                        <span class="icon" style="color:#FF5A00;">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>
+                          </svg>
+                        </span>
+                        <span>Refill Swap</span>
+                        <div style="color:#FF5A00; font-size:12px; font-weight:900;">₱990</div>
+                      </div>
+                      <div class="choice-pill">
+                        <span class="icon" style="color:#64748B;">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                          </svg>
+                        </span>
+                        <span>New Tank</span>
+                        <div style="color:#64748B; font-size:12px; font-weight:800;">₱2,450</div>
+                      </div>
+                    </div>
+
+                    <button style="width:100%; background:#FF5A00; color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                      <span>Add to Basket</span>
+                      <span class="icon">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-connector">
+          <div class="connector-badge">
+            <span>Next Step: Set Delivery Pin</span>
+            <span class="icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- CUSTOMER STEP 2 -->
+        <div class="step-card-box">
+          <div class="step-card-header">
+            <div class="step-badge">2</div>
+            <div class="step-title-wrap">
+              <h3>Pinpoint Delivery Address on Map</h3>
+              <p>Set your exact gate or door pin so the courier can navigate directly to you.</p>
+            </div>
+          </div>
+
+          <div class="step-body-grid">
+            <div class="instruction-flow">
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>1-Tap GPS Autofill</h4>
+                  <p>Click <b>"Use My Current Location"</b> to automatically detect your coordinates via device GPS.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-orange">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Adjust the Orange Pin</h4>
+                  <p>Drag the pin directly onto your house rooftop, building lobby, or front gate.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-green">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Landmarks & House Number</h4>
+                  <p>Enter your street name and landmark (e.g., <em>"Green gate, across from bakery"</em>) to assist the rider.</p>
+                </div>
+              </div>
+
+              <div class="tip-banner">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                  </svg>
+                </span>
+                <span><strong>Tip:</strong> An accurate pin prevents delays and ensures fast delivery times.</span>
+              </div>
+            </div>
+
+            <!-- Visual Mockup -->
+            <div class="mockup-container">
+              <div class="mockup-window">
+                <div class="mockup-top-bar">
+                  <div class="window-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <span>Checkout: Address Pin</span>
+                </div>
+                <div class="mockup-content">
+                  <div class="interactive-card">
+                    <button style="background:#EFF6FF; border:1px solid #BFDBFE; color:#1E40AF; padding:8px 12px; border-radius:8px; font-weight:700; font-size:11.5px; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;">
+                      <span class="icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/>
+                        </svg>
+                      </span>
+                      <span>Use My Current Location</span>
+                    </button>
+
+                    <div class="mock-map">
+                      <div class="mock-pin">
+                        <div class="pin-icon">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                          </svg>
+                        </div>
+                        <div class="pin-bottom"></div>
+                      </div>
+                      <div style="position:absolute; bottom:8px; left:8px; right:8px; background:rgba(15,23,42,0.85); color:white; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700; display:flex; align-items:center; gap:6px;">
+                        <span class="icon">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                          </svg>
+                        </span>
+                        <span>142 Mindanao Ave, Quezon City</span>
+                      </div>
+                    </div>
+
+                    <div style="background:#F1F5F9; padding:8px 10px; border-radius:8px; font-size:11px; color:#475569;">
+                      <b>Landmark:</b> Near 7-Eleven, Green Gate
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-connector">
+          <div class="connector-badge">
+            <span>Next Step: Payment Selection</span>
+            <span class="icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- CUSTOMER STEP 3 -->
+        <div class="step-card-box">
+          <div class="step-card-header">
+            <div class="step-badge">3</div>
+            <div class="step-title-wrap">
+              <h3>Choose Payment: COD or GCash</h3>
+              <p>Pay cash upon delivery or complete a cashless transaction via GCash QR.</p>
+            </div>
+          </div>
+
+          <div class="step-body-grid">
+            <div class="instruction-flow">
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-green">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Option A: Cash on Delivery (COD)</h4>
+                  <p>Hand payment directly to the delivery rider after your cylinder is received and leak-tested.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Option B: GCash Online</h4>
+                  <p>Scan the merchant GCash QR code, enter your 13-digit Reference Number, and attach a screenshot receipt.</p>
+                </div>
+              </div>
+
+              <div class="tip-banner">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                  </svg>
+                </span>
+                <span><strong>Tip:</strong> COD is recommended for first-time orders for maximum convenience.</span>
+              </div>
+            </div>
+
+            <!-- Visual Mockup -->
+            <div class="mockup-container">
+              <div class="mockup-window">
+                <div class="mockup-top-bar">
+                  <div class="window-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <span>Checkout: Payment Method</span>
+                </div>
+                <div class="mockup-content">
+                  <div class="interactive-card">
+                    <div class="pill-group">
+                      <div class="choice-pill active">
+                        <span class="icon" style="color:#16A34A;">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/>
+                          </svg>
+                        </span>
+                        <span>Cash on Delivery</span>
+                      </div>
+                      <div class="choice-pill">
+                        <span class="icon" style="color:#2563EB;">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>
+                          </svg>
+                        </span>
+                        <span>GCash QR</span>
+                      </div>
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:10px; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:8px; padding:8px 10px;">
+                      <img src="images/regasco-qr-gcash.jpg" data-filename="regasco-qr-gcash.jpg" class="system-img" alt="GCash QR" style="width:48px; height:48px; object-fit:contain; border-radius:4px; border:1px solid #CBD5E1; background:white;" onerror="this.src='/images/regasco-qr-gcash.jpg'">
+                      <div style="font-size:11px;">
+                        <b style="color:#166534;">Official Regasco GCash Hub</b>
+                        <p style="color:#64748B;">Instant receipt verification enabled.</p>
+                      </div>
+                    </div>
+
+                    <button style="width:100%; background:#FF5A00; color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:12.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                      <span>Place Order (₱990)</span>
+                      <span class="icon">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-connector">
+          <div class="connector-badge">
+            <span>Next Step: Live Radar & Delivery</span>
+            <span class="icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- CUSTOMER STEP 4 -->
+        <div class="step-card-box">
+          <div class="step-card-header">
+            <div class="step-badge">4</div>
+            <div class="step-title-wrap">
+              <h3>Live GPS Radar Tracking & Safe Delivery</h3>
+              <p>Track your rider on the map, receive arrival notifications, and verify the safety leak test.</p>
+            </div>
+          </div>
+
+          <div class="step-body-grid">
+            <div class="instruction-flow">
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Status Progress Pipeline</h4>
+                  <p>Follow along through 4 transparent stages: <em>Order Placed &rarr; Preparing Tank &rarr; Out for Delivery &rarr; Delivered</em>.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-orange">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-4-4h-3v10"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Live Motorcycle Radar</h4>
+                  <p>View the courier's real road movement with calculated driving distance and arrival time (ETA).</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-green">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>1-Tap Call Rider</h4>
+                  <p>Need to give specific gate directions? Call the assigned courier directly from the tracking page.</p>
+                </div>
+              </div>
+
+              <div class="tip-banner">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
+                  </svg>
+                </span>
+                <span><strong>Safety Standard:</strong> Regasco riders perform a complimentary soap bubble leak test on your stove connection.</span>
+              </div>
+            </div>
+
+            <!-- Visual Mockup -->
+            <div class="mockup-container">
+              <div class="mockup-window">
+                <div class="mockup-top-bar">
+                  <div class="window-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <span>Order Tracking: REG-8921</span>
+                </div>
+                <div class="mockup-content">
+                  <div class="interactive-card">
+                    <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:800; color:#64748B;">
+                      <span style="color:#16A34A;">● Placed</span>
+                      <span style="color:#16A34A;">● Prepared</span>
+                      <span style="color:#FF5A00; font-weight:900;">● Out for Delivery</span>
+                      <span>● Delivered</span>
+                    </div>
+
+                    <div style="height:120px; background:#0F172A; border-radius:8px; display:flex; align-items:center; justify-content:center; color:white; font-size:11.5px; font-weight:700; gap:8px;">
+                      <span class="icon" style="color:#FF5A00;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>
+                        </svg>
+                      </span>
+                      <span>Kuya Jun &bull; 4 Mins Away (Mindanao Ave)</span>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <div>
+                        <div style="font-weight:800; font-size:12px; color:#0F172A;">Order #REG-8921</div>
+                        <div style="font-size:10.5px; color:#64748B;">11kg Regasco Cylinder</div>
+                      </div>
+                      <a href="#" style="background:#16A34A; color:white; padding:6px 12px; border-radius:6px; font-weight:800; font-size:11px; text-decoration:none; display:flex; align-items:center; gap:5px;">
+                        <span class="icon">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                          </svg>
+                        </span>
+                        <span>Call Rider</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
 
-      <!-- =================================================================== -->
-      <!-- SECTION 2: STORE & ADMIN DISPATCH GUIDE                             -->
-      <!-- =================================================================== -->
+      <!-- ================================================================= -->
+      <!-- SECTION 2: STORE ADMIN & DISPATCH                                 -->
+      <!-- ================================================================= -->
       <section id="admin" class="guide-section">
         <div class="section-hero">
-          <div class="section-hero-left">
-            <span class="role-badge-lg badge-admin">Role: Store Manager & Dispatcher</span>
-            <h2>Admin Hub & Central Dispatch Radar</h2>
-            <p>Control live orders, dispatch fleet riders, manage product prices, adjust depot coordinates, and oversee delivery telemetry.</p>
+          <div>
+            <span class="hero-badge badge-orange">Store Operations</span>
+            <h2>Admin Control Center & Dispatch Radar</h2>
+            <p>Review customer orders, dispatch available fleet riders, print thermal slips, and configure depot settings.</p>
           </div>
         </div>
 
-        <div class="manual-grid">
-          <!-- Admin Step 1 -->
-          <div class="step-card">
-            <div class="step-num">1</div>
-            <h3>Admin Access & Login</h3>
-            <p>Access the control center at <code>/admin</code>:</p>
-            <ul>
-              <li>Enter your authorized Admin Username and Password.</li>
-              <li>Once verified, the session stays active in your browser.</li>
-              <li>To change admin credentials, visit the <strong>Store & Map APIs</strong> tab in the sidebar.</li>
-            </ul>
+        <!-- ADMIN STEP 1 -->
+        <div class="step-card-box">
+          <div class="step-card-header">
+            <div class="step-badge">1</div>
+            <div class="step-title-wrap">
+              <h3>Admin Dashboard & Live Orders Table</h3>
+              <p>Monitor incoming customer orders and verify payment details.</p>
+            </div>
           </div>
 
-          <!-- Admin Step 2 -->
-          <div class="step-card">
-            <div class="step-num">2</div>
-            <h3>Managing Live Orders</h3>
-            <p>The Orders table organizes transactions by lifecycle:</p>
-            <ul>
-              <li><strong>Pending:</strong> Newly placed customer orders awaiting store confirmation.</li>
-              <li><strong>Assigning Rider:</strong> Click <em>"Assign Rider"</em> dropdown to pick an available rider on duty.</li>
-              <li><strong>Print Receipt:</strong> Generate clean 80mm thermal receipt slips for the rider delivery pouch.</li>
-              <li><strong>GCash Verification:</strong> Click to view customer receipt screenshots before approving.</li>
-            </ul>
-          </div>
+          <div class="step-body-grid">
+            <div class="instruction-flow">
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-orange">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Access /admin</h4>
+                  <p>Log in using your authorized store username and password. The session remains securely active in your browser.</p>
+                </div>
+              </div>
 
-          <!-- Admin Step 3 -->
-          <div class="step-card">
-            <div class="step-num">3</div>
-            <h3>Fleet & Rider Management</h3>
-            <p>Under the <strong>Riders</strong> sidebar tab:</p>
-            <ul>
-              <li><strong>Add New Rider:</strong> Enter name, phone number, motorcycle plate number, and assign a 4-digit security PIN.</li>
-              <li><strong>Status Overview:</strong> Monitor who is <code>AVAILABLE</code>, <code>ON_DELIVERY</code>, or <code>OFFLINE</code>.</li>
-              <li><strong>Deactivate / Edit:</strong> Update rider details or remove inactive staff.</li>
-            </ul>
-          </div>
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Order Intake Queue</h4>
+                  <p>New orders arrive with yellow <b>PENDING</b> badges. Click any row to review items, delivery address, and notes.</p>
+                </div>
+              </div>
 
-          <!-- Admin Step 4 -->
-          <div class="step-card">
-            <div class="step-num">4</div>
-            <h3>Depot GPS & Map Configuration</h3>
-            <p>Under <strong>Store & Map APIs</strong>:</p>
-            <ul>
-              <li><strong>Depot Latitude & Longitude:</strong> Adjust your physical central depot location (e.g. Mindanao Ave Central Depot).</li>
-              <li><strong>Store Open / Closed Switch:</strong> Toggle ordering availability in one click (e.g. during severe typhoons or holidays).</li>
-              <li><strong>Delivery Fee & Free Threshold:</strong> Set standard delivery rates (e.g., ₱50 delivery, free above ₱2,000).</li>
-            </ul>
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-green">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Print 80mm Thermal Receipts</h4>
+                  <p>Generate clean delivery slips for the rider's pouch with customer details and QR code tracking.</p>
+                </div>
+              </div>
+
+              <div class="tip-banner">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                  </svg>
+                </span>
+                <span><strong>Tip:</strong> Orders placed online update in real-time without needing manual browser page refreshes.</span>
+              </div>
+            </div>
+
+            <!-- Admin Mockup -->
+            <div class="mockup-container">
+              <div class="mockup-window">
+                <div class="mockup-top-bar">
+                  <div class="window-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <span>Admin Hub: Live Orders</span>
+                </div>
+                <div class="mockup-content">
+                  <table class="clean-table">
+                    <thead>
+                      <tr>
+                        <th>ORDER</th>
+                        <th>STATUS</th>
+                        <th>ACTION</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <b>REG-8921</b>
+                          <div style="font-size:10px; color:#64748B;">Juan Cruz &bull; 1x 11kg</div>
+                        </td>
+                        <td><span style="background:#FEF3C7; color:#92400E; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:10px;">PENDING</span></td>
+                        <td><button style="background:#FF5A00; color:white; border:none; padding:4px 8px; border-radius:5px; font-size:10px; font-weight:800; cursor:pointer;">Assign</button></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <b>REG-8919</b>
+                          <div style="font-size:10px; color:#64748B;">Maria Santos &bull; 2x 11kg</div>
+                        </td>
+                        <td><span style="background:#DCFCE7; color:#166534; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:10px;">DELIVERED</span></td>
+                        <td><button style="background:#F1F5F9; color:#475569; border:1px solid #CBD5E1; padding:4px 8px; border-radius:5px; font-size:10px; font-weight:700;">Receipt</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Order Lifecycle Status Table -->
-        <div class="feature-showcase">
-          <h4>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            System Order Status Reference
-          </h4>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Status Code</th>
-                <th>Meaning</th>
-                <th>Customer Visibility</th>
-                <th>Next Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><span class="badge-status badge-pending">PENDING</span></td>
-                <td>Customer submitted order; waiting for store review.</td>
-                <td>"Order Placed - Waiting for Store Confirmation"</td>
-                <td>Admin reviews items & assigns an on-duty rider.</td>
-              </tr>
-              <tr>
-                <td><span class="badge-status badge-prep">PREPARING</span></td>
-                <td>Depot staff inspecting valve seal and loading cylinder.</td>
-                <td>"Tank Being Inspected & Loaded at Hub"</td>
-                <td>Rider departs depot with cylinder.</td>
-              </tr>
-              <tr>
-                <td><span class="badge-status badge-out">OUT_FOR_DELIVERY</span></td>
-                <td>Rider on motorcycle en route to customer house.</td>
-                <td>"Rider On the Way - Live GPS Active"</td>
-                <td>Rider arrives at gate, takes Proof of Delivery (POD).</td>
-              </tr>
-              <tr>
-                <td><span class="badge-status badge-done">DELIVERED</span></td>
-                <td>Order fulfilled, COD collected, leak test completed.</td>
-                <td>"Delivered & Inspected Successfully"</td>
-                <td>Archived to completed orders & sales history.</td>
-              </tr>
-              <tr>
-                <td><span class="badge-status badge-cancelled">CANCELLED</span></td>
-                <td>Order rejected or cancelled by customer/admin.</td>
-                <td>"Order Cancelled"</td>
-                <td>Inventory restored.</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="step-connector">
+          <div class="connector-badge">
+            <span>Next Action: Assigning Fleet Riders</span>
+            <span class="icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>
+              </svg>
+            </span>
+          </div>
         </div>
+
+        <!-- ADMIN STEP 2 -->
+        <div class="step-card-box">
+          <div class="step-card-header">
+            <div class="step-badge">2</div>
+            <div class="step-title-wrap">
+              <h3>Fleet Dispatching & Automatic Alerts</h3>
+              <p>Assign orders to couriers on duty with immediate audio and push dispatch alerts.</p>
+            </div>
+          </div>
+
+          <div class="step-body-grid">
+            <div class="instruction-flow">
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-orange">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Select On-Duty Rider</h4>
+                  <p>Choose an available courier from the dropdown menu (e.g., <em>Kuya Jun Santos - QC-8821</em>).</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Instant Rider Dispatch Notification</h4>
+                  <p>The rider's smartphone immediately triggers a 3-tone siren chime, vibrates, and displays the new mission banner.</p>
+                </div>
+              </div>
+
+              <div class="tip-banner">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                  </svg>
+                </span>
+                <span><strong>Tip:</strong> Only riders currently toggled to <b>"On Duty"</b> will appear as available in the dispatch selector.</span>
+              </div>
+            </div>
+
+            <!-- Admin Mockup -->
+            <div class="mockup-container">
+              <div class="mockup-window">
+                <div class="mockup-top-bar">
+                  <div class="window-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <span>Dispatch Selector</span>
+                </div>
+                <div class="mockup-content">
+                  <div class="interactive-card">
+                    <div class="interactive-pointer">
+                      <span class="icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                        </svg>
+                      </span>
+                      <span>Select an available courier:</span>
+                    </div>
+
+                    <div style="border:1.5px solid var(--primary-border); border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
+                      <div>
+                        <strong style="font-size:12px; color:#0F172A;">Kuya Jun Santos</strong>
+                        <div style="font-size:10px; color:#16A34A; font-weight:800;">● Available on Duty (Plate: QC-8821)</div>
+                      </div>
+                      <span style="background:#FF5A00; color:white; font-size:10px; font-weight:800; padding:4px 8px; border-radius:6px;">Assign</span>
+                    </div>
+
+                    <div style="border:1px solid #CBD5E1; border-radius:8px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; opacity:0.6;">
+                      <div>
+                        <strong style="font-size:12px; color:#0F172A;">Mark Reyes</strong>
+                        <div style="font-size:10px; color:#C2410C; font-weight:800;">● On Delivery</div>
+                      </div>
+                      <span style="background:#E2E8F0; color:#475569; font-size:10px; font-weight:700; padding:4px 8px; border-radius:6px;">Busy</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
 
-      <!-- =================================================================== -->
-      <!-- SECTION 3: RIDER COCKPIT GUIDE                                      -->
-      <!-- =================================================================== -->
+      <!-- ================================================================= -->
+      <!-- SECTION 3: RIDER COCKPIT GUIDE                                    -->
+      <!-- ================================================================= -->
       <section id="rider" class="guide-section">
         <div class="section-hero">
-          <div class="section-hero-left">
-            <span class="role-badge-lg badge-rider">Role: Delivery Rider (Missions & POD)</span>
-            <h2>Rider Cockpit & Field Delivery Guide</h2>
-            <p>Designed for motorcycle couriers: receiving instant dispatch alerts, road navigation, GPS telemetry broadcasting, and doorstep Proof of Delivery.</p>
-          </div>
-        </div>
-
-        <div class="manual-grid">
-          <!-- Rider Step 1 -->
-          <div class="step-card">
-            <div class="step-num">1</div>
-            <h3>Logging in to the Cockpit</h3>
-            <p>Open <code>/rider</code> on your Android smartphone or open the installed <strong>Regasco APK</strong>:</p>
-            <ul>
-              <li>Enter your registered phone number (e.g. <code>0917-555-1201</code>).</li>
-              <li>Enter your 4-digit security PIN.</li>
-              <li>Tap <strong>"LOG IN TO COCKPIT"</strong>. Your session will remain saved on your phone.</li>
-              <li>Toggle your status to <strong>"On Duty"</strong> so the central depot can assign deliveries to you.</li>
-            </ul>
-          </div>
-
-          <!-- Rider Step 2 -->
-          <div class="step-card">
-            <div class="step-num">2</div>
-            <h3>Receiving Incoming Orders</h3>
-            <p>When the Central Hub assigns a new delivery mission:</p>
-            <ul>
-              <li><strong>Loud Audio Siren:</strong> A 3-tone siren plays from the phone speaker.</li>
-              <li><strong>Vibration Buzz:</strong> The phone vibrates in your pocket or handlebar mount.</li>
-              <li><strong>Action:</strong> Review customer address, cylinder quantity, and tap <strong>"Accept & Deliver"</strong>.</li>
-            </ul>
-          </div>
-
-          <!-- Rider Step 3 -->
-          <div class="step-card">
-            <div class="step-num">3</div>
-            <h3>Navigation & Calling Customer</h3>
-            <p>While on the road to the destination:</p>
-            <ul>
-              <li><strong>Embedded Map:</strong> Review customer doorstep pin and route line.</li>
-              <li><strong>"Open in Google Maps" Button:</strong> Tapping this opens the Google Maps app for <em>hands-free voice turn-by-turn spoken guidance</em>.</li>
-              <li><strong>1-Tap "Call Customer":</strong> Direct phone dialer if you need to ask for gate directions or buzz the doorbell.</li>
-            </ul>
-          </div>
-
-          <!-- Rider Step 4 -->
-          <div class="step-card">
-            <div class="step-num">4</div>
-            <h3>Proof of Delivery (POD)</h3>
-            <p>When you reach the customer’s house:</p>
-            <ul>
-              <li>Tap <strong>"Arrived &bull; Snap Proof of Delivery"</strong>.</li>
-              <li><strong>Camera Snap:</strong> Take a photo of the newly connected cylinder at the doorstep or kitchen stove.</li>
-              <li><strong>Collect COD:</strong> If Cash on Delivery, check the collected amount checkbox.</li>
-              <li><strong>Safety Inspection:</strong> Verify safety regulator valve is securely connected.</li>
-              <li>Tap <strong>"Confirm Delivery Complete"</strong>. Confetti will celebrate completion!</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="callout callout-warning">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
           <div>
-            <div class="callout-title">Rider Phone Setting Requirement</div>
-            Make sure your smartphone has <strong>Location / GPS enabled</strong> and that you tap <strong>"Allow"</strong> when your browser prompts for location access. Keep your phone mounted on your motorcycle handlebar with the screen active for smooth GPS tracking.
+            <span class="hero-badge badge-green">Couriers & Drivers</span>
+            <h2>Rider Delivery Cockpit Mobile Guide</h2>
+            <p>Designed for mobile screens: receiving missions, voice turn-by-turn Google Maps navigation, and Proof of Delivery photos.</p>
           </div>
         </div>
+
+        <!-- RIDER STEP 1 -->
+        <div class="step-card-box">
+          <div class="step-card-header">
+            <div class="step-badge">1</div>
+            <div class="step-title-wrap">
+              <h3>Rider Login & Shift Duty Switch</h3>
+              <p>Log in with your registered phone number and 4-digit security PIN.</p>
+            </div>
+          </div>
+
+          <div class="step-body-grid">
+            <div class="instruction-flow">
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Open /rider on Mobile</h4>
+                  <p>Launch Chrome on your smartphone or tap the <b>Regasco APK</b> icon from your Android home screen.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-orange">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Enter Credentials</h4>
+                  <p>Type your phone number (e.g. <code>0917-555-1201</code>) and 4-digit PIN. Your session remains saved on your phone.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-green">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Toggle "On Duty"</h4>
+                  <p>When starting your shift, set your status to <b>On Duty</b> so the Central Hub can assign active delivery runs to you.</p>
+                </div>
+              </div>
+
+              <div class="tip-banner">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                  </svg>
+                </span>
+                <span><strong>Tip:</strong> Keep location services enabled so your bike coordinates stream smoothly.</span>
+              </div>
+            </div>
+
+            <!-- Phone Frame -->
+            <div>
+              <div class="phone-mockup-frame">
+                <div class="phone-speaker-bar"></div>
+                <div class="phone-screen-ui">
+                  <div style="text-align:center; margin-bottom:12px;">
+                    <strong style="font-size:14px;">REGASCO RIDER</strong>
+                    <div style="font-size:10px; color:#94A3B8;">Central Hub Delivery Cockpit</div>
+                  </div>
+
+                  <div style="background:#1E293B; border-radius:10px; padding:10px; margin-bottom:8px;">
+                    <label style="font-size:9.5px; color:#94A3B8; font-weight:800;">PHONE NUMBER</label>
+                    <div style="font-size:12px; font-weight:700; color:white; margin-top:2px;">0917-555-1201</div>
+                  </div>
+
+                  <div style="background:#1E293B; border-radius:10px; padding:10px; margin-bottom:10px;">
+                    <label style="font-size:9.5px; color:#94A3B8; font-weight:800;">SECURITY PIN</label>
+                    <div style="font-size:13px; font-weight:700; color:#FF5A00; letter-spacing:3px; margin-top:2px;">••••</div>
+                  </div>
+
+                  <button style="width:100%; background:#FF5A00; color:white; border:none; padding:10px; border-radius:10px; font-weight:800; font-size:11.5px; cursor:pointer;">
+                    Log In to Cockpit ➔
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-connector">
+          <div class="connector-badge">
+            <span>Next: Active Mission & Road Navigation</span>
+            <span class="icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- RIDER STEP 2 -->
+        <div class="step-card-box">
+          <div class="step-card-header">
+            <div class="step-badge">2</div>
+            <div class="step-title-wrap">
+              <h3>Mission Alerts & Google Maps Spoken Directions</h3>
+              <p>Receive order alerts and launch hands-free voice driving directions while on the road.</p>
+            </div>
+          </div>
+
+          <div class="step-body-grid">
+            <div class="instruction-flow">
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-orange">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Siren & Vibration Dispatch Alert</h4>
+                  <p>When an order is assigned, your phone chimes loudly and vibrates so you never miss an incoming delivery.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>"Open in Google Maps" Voice Driving</h4>
+                  <p>Tapping the blue button opens Google Maps for spoken voice driving directions (<em>"In 200m, turn right"</em>) while you drive.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-green">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Real GPS Telemetry</h4>
+                  <p>Your actual road position streams to the customer tracking page in real-time as you ride.</p>
+                </div>
+              </div>
+
+              <div class="tip-banner">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                  </svg>
+                </span>
+                <span><strong>Tip:</strong> Mount your phone on your motorcycle handlebar for safe navigation.</span>
+              </div>
+            </div>
+
+            <!-- Phone Frame -->
+            <div>
+              <div class="phone-mockup-frame">
+                <div class="phone-speaker-bar"></div>
+                <div class="phone-screen-ui">
+                  <div style="background:#FF5A00; border-radius:10px; padding:10px; margin-bottom:10px; text-align:center;">
+                    <div style="font-size:9.5px; font-weight:900; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:6px; display:inline-block;">
+                      NEW MISSION ASSIGNED
+                    </div>
+                    <div style="font-size:13px; font-weight:800; margin-top:2px;">Order #REG-8921</div>
+                    <div style="font-size:10px;">142 Mindanao Ave (1x 11kg)</div>
+                  </div>
+
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <button style="background:#2563EB; color:white; border:none; padding:9px; border-radius:8px; font-weight:800; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                      <span class="icon">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                        </svg>
+                      </span>
+                      <span>Open in Google Maps (Voice)</span>
+                    </button>
+                    <button style="background:#16A34A; color:white; border:none; padding:9px; border-radius:8px; font-weight:800; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                      <span class="icon">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                        </svg>
+                      </span>
+                      <span>Call Customer</span>
+                    </button>
+                    <button style="background:#1E293B; color:#CBD5E1; border:1px solid #334155; padding:9px; border-radius:8px; font-weight:800; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                      <span class="icon">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
+                        </svg>
+                      </span>
+                      <span>Arrived &bull; Snap Proof of Delivery</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-connector">
+          <div class="connector-badge">
+            <span>Next: Doorstep Fulfillment & POD</span>
+            <span class="icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- RIDER STEP 3 -->
+        <div class="step-card-box">
+          <div class="step-card-header">
+            <div class="step-badge">3</div>
+            <div class="step-title-wrap">
+              <h3>Proof of Delivery (POD) & Cash Collection</h3>
+              <p>Snap a doorstep photo of the connected cylinder and complete the order.</p>
+            </div>
+          </div>
+
+          <div class="step-body-grid">
+            <div class="instruction-flow">
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-blue">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Camera Photo Verification</h4>
+                  <p>Tap the camera button to take a photo of the delivered LPG cylinder installed at the customer's doorstep or stove.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-green">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Collect COD Amount</h4>
+                  <p>Check the exact cash received and tick the cash collected confirmation box.</p>
+                </div>
+              </div>
+
+              <div class="instruction-item">
+                <div class="instruction-icon-box icon-box-orange">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
+                  </svg>
+                </div>
+                <div class="instruction-text">
+                  <h4>Safety Valve Leak Check</h4>
+                  <p>Perform the standard soap bubble safety check to guarantee zero gas leaks before departing.</p>
+                </div>
+              </div>
+
+              <div class="tip-banner">
+                <span class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
+                  </svg>
+                </span>
+                <span><strong>Safety Standard:</strong> Confirming delivery sends an instant SMS and marks the drop completed.</span>
+              </div>
+            </div>
+
+            <!-- Phone Frame -->
+            <div>
+              <div class="phone-mockup-frame">
+                <div class="phone-speaker-bar"></div>
+                <div class="phone-screen-ui">
+                  <strong style="font-size:12px; margin-bottom:8px; display:block;">Proof of Delivery Photo</strong>
+
+                  <div style="height:110px; background:#1E293B; border-radius:8px; border:1.5px dashed #475569; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; margin-bottom:10px;">
+                    <span class="icon" style="color:#94A3B8;">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>
+                      </svg>
+                    </span>
+                    <span style="font-size:10px; color:#94A3B8;">Tap to snap doorstep photo</span>
+                  </div>
+
+                  <div style="background:#1E293B; border-radius:8px; padding:8px 10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <div style="font-size:9.5px; color:#F59E0B; font-weight:800;">Collect COD Cash:</div>
+                      <b style="font-size:12.5px; color:white;">₱990.00</b>
+                    </div>
+                    <span class="icon" style="color:#16A34A;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </span>
+                  </div>
+
+                  <button style="width:100%; background:#16A34A; color:white; border:none; padding:10px; border-radius:8px; font-weight:800; font-size:11.5px; cursor:pointer;">
+                    Confirm Delivery Complete ➔
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
 
-      <!-- =================================================================== -->
-      <!-- SECTION 4: MAPS, GPS & SYSTEM FAQ                                   -->
-      <!-- =================================================================== -->
+      <!-- ================================================================= -->
+      <!-- SECTION 4: MAPS & FAQ                                             -->
+      <!-- ================================================================= -->
       <section id="faq" class="guide-section">
         <div class="section-hero">
-          <div class="section-hero-left">
-            <span class="role-badge-lg badge-faq">Reference: Architecture & Troubleshooting</span>
-            <h2>Maps, GPS & Technical Operations FAQ</h2>
-            <p>Clear answers regarding map billing, GPS permissions, mobile APK installation, and live hosting questions.</p>
+          <div>
+            <span class="hero-badge badge-purple">Reference & Troubleshooting</span>
+            <h2>Frequently Asked Questions</h2>
+            <p>Clear details about map costs, GPS permissions, mobile installation, and cloud database setup.</p>
           </div>
         </div>
 
-        <div class="faq-list">
-          <!-- FAQ 1 -->
-          <div class="faq-item open">
-            <div class="faq-question" onclick="toggleFaq(this)">
-              <span>Do I need to pay for the Map or GPS services on live deployment?</span>
-              <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-            <div class="faq-answer">
-              <strong>No, you do NOT need to pay anything.</strong> The entire map infrastructure is built on 100% free, open-source services:
-              <br>&bull; <em>Visual Maps:</em> OpenStreetMap (OSM) community tiles via Leaflet.js ($0).
-              <br>&bull; <em>Road Geometry & Distance:</em> OSRM (Open Source Routing Machine) ($0).
-              <br>&bull; <em>Turn-by-Turn Rider Voice Guidance:</em> Native Google Maps app deep-links ($0, no Google Cloud billing required).
-              <br>&bull; <em>Customer GPS:</em> Device hardware GPS via standard W3C Geolocation API ($0).
-            </div>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div class="step-card-box" style="padding:20px; margin-bottom:0;">
+            <h4 style="font-size:15px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
+              <span class="icon" style="color:#FF5A00;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/>
+                </svg>
+              </span>
+              <span>Do I need to pay for maps or GPS routing on live deployment?</span>
+            </h4>
+            <p style="font-size:13.5px; color:#475569; margin-top:6px;">
+              <b>No, you do NOT need to pay anything.</b> The map architecture uses OpenStreetMap tiles and OSRM (Open Source Routing Machine), both of which are 100% free and open-source. Spoken turn-by-turn directions use the native Google Maps app deep-link, which requires no Google Cloud billing.
+            </p>
           </div>
 
-          <!-- FAQ 2 -->
-          <div class="faq-item">
-            <div class="faq-question" onclick="toggleFaq(this)">
-              <span>Why does the GPS location button require HTTPS (SSL) when live?</span>
-              <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-            <div class="faq-answer">
-              All modern web browsers (Chrome, Safari, iOS, Android) strictly block location access on unencrypted <code>http://</code> websites to protect user privacy. When deployed to <strong>Vercel</strong> or any modern cloud hosting, free SSL (<code>https://</code>) is enabled automatically, so location permissions work without issues.
-            </div>
+          <div class="step-card-box" style="padding:20px; margin-bottom:0;">
+            <h4 style="font-size:15px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
+              <span class="icon" style="color:#2563EB;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <span>Why is HTTPS (SSL) required on live servers for GPS?</span>
+            </h4>
+            <p style="font-size:13.5px; color:#475569; margin-top:6px;">
+              Modern web browsers (Safari, Chrome, Android, iOS) block location permissions on unencrypted <code>http://</code> websites. When deployed to Vercel or modern cloud hosting, free SSL (<code>https://</code>) is enabled automatically so device GPS operates without issues.
+            </p>
           </div>
 
-          <!-- FAQ 3 -->
-          <div class="faq-item">
-            <div class="faq-question" onclick="toggleFaq(this)">
-              <span>How do riders install the app on their Android phones?</span>
-              <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-            <div class="faq-answer">
-              Riders have two easy options:
-              <br><strong>Option A (Pre-packaged APK):</strong> Download and install <code>/regasco-app.apk</code> directly from the website onto any Android device.
-              <br><strong>Option B (PWA / Browser Shortcut):</strong> Open <code>https://your-domain/rider</code> in Google Chrome on mobile, tap the 3 dots menu &rarr; tap <strong>"Add to Home screen"</strong>. This creates an app icon on their phone that opens in full-screen standalone mode.
-            </div>
-          </div>
-
-          <!-- FAQ 4 -->
-          <div class="faq-item">
-            <div class="faq-question" onclick="toggleFaq(this)">
-              <span>What environment variables must be configured on Vercel?</span>
-              <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-            <div class="faq-answer">
-              For full multi-device live synchronization, configure:
-              <br><code>DATABASE_URL</code> = Your Neon PostgreSQL connection string (e.g. <code>postgresql://neondb_owner:...@ep-....neon.tech/neondb?sslmode=require</code>).
-              <br>This guarantees that orders, rider GPS pings, and customer updates are stored in the cloud database and instantly shared across all active phones and computers.
-            </div>
-          </div>
-
-          <!-- FAQ 5 -->
-          <div class="faq-item">
-            <div class="faq-question" onclick="toggleFaq(this)">
-              <span>How does GCash payment verification work?</span>
-              <svg class="faq-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </div>
-            <div class="faq-answer">
-              When a customer selects GCash:
-              <br>1. They send payment to the merchant's official GCash number/QR code displayed on the checkout screen.
-              <br>2. They enter their 13-digit Reference Number and attach a screenshot receipt.
-              <br>3. In the <strong>Admin Dashboard</strong>, the order displays a green GCash icon. The store manager clicks the attachment to inspect the receipt image before dispatching the rider.
-            </div>
+          <div class="step-card-box" style="padding:20px; margin-bottom:0;">
+            <h4 style="font-size:15px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:8px;">
+              <span class="icon" style="color:#16A34A;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>
+                </svg>
+              </span>
+              <span>How do riders install the app on Android phones?</span>
+            </h4>
+            <p style="font-size:13.5px; color:#475569; margin-top:6px;">
+              Couriers can download the packaged APK directly from <code>/regasco-app.apk</code>, or open <code>https://regasco.vercel.app/rider</code> in Chrome and select <b>"Add to Home screen"</b> for a one-tap app launcher.
+            </p>
           </div>
         </div>
       </section>
@@ -1059,44 +1923,41 @@
   </main>
 
   <script>
-    // Tab Switching Logic
+    // Ensure all system images load correctly whether opened via file:// or http://
+    function resolveImages() {
+      const isFile = window.location.protocol === 'file:';
+      document.querySelectorAll('img.system-img').forEach(img => {
+        const filename = img.getAttribute('data-filename');
+        if (filename) {
+          img.src = isFile ? 'images/' + filename : '/images/' + filename;
+        }
+      });
+    }
+
     function switchTab(roleId) {
-      // Update Tab Buttons
-      const tabBtns = document.querySelectorAll('.tab-btn');
-      tabBtns.forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.guide-section').forEach(sec => sec.classList.remove('active'));
 
-      const sections = document.querySelectorAll('.guide-section');
-      sections.forEach(sec => sec.classList.remove('active'));
-
-      // Activate Target
       const activeSection = document.getElementById(roleId);
       if (activeSection) {
         activeSection.classList.add('active');
       }
 
-      // Update active state on matching button
-      const clickedBtn = Array.from(tabBtns).find(btn => btn.getAttribute('onclick').includes(roleId));
+      const clickedBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn =>
+        btn.getAttribute('onclick').includes(roleId)
+      );
       if (clickedBtn) {
         clickedBtn.classList.add('active');
       }
 
-      // Smooth scroll to top of content
       window.scrollTo({
-        top: 180,
+        top: 140,
         behavior: 'smooth'
       });
     }
 
-    // Accordion Toggle Logic
-    function toggleFaq(el) {
-      const parent = el.closest('.faq-item');
-      if (parent) {
-        parent.classList.toggle('open');
-      }
-    }
-
-    // Deep link via hash if provided (e.g. /manual#rider)
     window.addEventListener('DOMContentLoaded', () => {
+      resolveImages();
       const hash = window.location.hash.replace('#', '');
       if (['customer', 'admin', 'rider', 'faq'].includes(hash)) {
         switchTab(hash);
@@ -1105,4 +1966,3 @@
   </script>
 </body>
 </html>
-
